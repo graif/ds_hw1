@@ -16,6 +16,9 @@ class Employee {
     shared_ptr<Employee> head;
     shared_ptr<Employee> left;
     shared_ptr<Employee> right;
+public:
+    Employee(int employee_id, Company* company,int salary,int grade,Employee* head);
+    ~Employee()=default;
 };
 
 #endif //DS_HW1_EMPLOYEE_H
