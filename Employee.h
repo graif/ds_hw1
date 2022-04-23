@@ -4,11 +4,10 @@
 
 #ifndef DS_HW1_EMPLOYEE_H
 #define DS_HW1_EMPLOYEE_H
-
-
 #include "Company.h"
 using std::shared_ptr;
 class Employee {
+public:
     int employee_id;
     Company* company;
     int salary;
@@ -16,7 +15,6 @@ class Employee {
     shared_ptr<Employee> head;
     shared_ptr<Employee> left;
     shared_ptr<Employee> right;
-public:
     Employee(int employee_id, Company* company,int salary,int grade,Employee* head);
     ~Employee()=default;
 };

@@ -8,16 +8,107 @@
 #include "Employee.h"
 using std::shared_ptr;
 
-class DS{
-shared_ptr<Company> company_head;
-shared_ptr<Employee> employee_head;
-Employee* highest_earner_employee;
+class DataStrcture {
+public:
+    DataStrcture()=default;
+    ~DataStrcture()=default;
+
+    shared_ptr<Company> company_head;
+    shared_ptr<Employee> employee_head;
+    Employee* highest_earner_employee;
 };
 
+Company* findCompanyById(Company* head_company ,int CompanyID){
+    if(head_company==NULL){
+        return NULL;
+    }
+    if(head_company->company_id==CompanyID){
+        return head_company;
+    }
+    else if(head_company->company_id>CompanyID && head_company->right!=NULL) {
+        return findCompanyById(head_company->right.get(), CompanyID);
+    }
+    else if(head_company->company_id<CompanyID && head_company->left!=NULL) {
+        return findCompanyById(head_company->left.get(), CompanyID);
+    }
+    return NULL;
+}
 
-void *Init();
+Employee* findEmployeeById(Employee* head_employee ,int EmployeeID){
+    if(head_employee==NULL){
+        return NULL;
+    }
+    if(head_employee->employee_id==EmployeeID){
+        return head_employee;
+    }
+    else if(head_employee->employee_id>EmployeeID && head_employee->right!=NULL) {
+        return findEmployeeById(head_employee->right.get(), EmployeeID);
+    }
+    else if(head_employee->employee_id<EmployeeID && head_employee->left!=NULL) {
+        return findEmployeeById(head_employee->left.get(), EmployeeID);
+    }
+    return NULL;
+}
 
-StatusType AddCompany(void *DS, int CompanyID, int Value);
+Company* findMyCompanyDaddy(Company* head_company ,int CompanyID){
+    if(head_company == NULL) { // no head, employee is the new head
+        return NULL;
+    }
+    else {
+        if(head_company->company_id > CompanyID) {
+            if(head_company->left == NULL) {
+                return head_company;
+            }
+            return findMyCompanyDaddy(head_company->left.get(), CompanyID);
+        }
+        else {
+            if(head_company->right == NULL) {
+                return head_company;
+            }
+            return findMyCompanyDaddy(head_company->right.get(), CompanyID);
+        }
+    }
+}
+
+Employee* findMyEmployeeDaddy(Employee* head_employee ,int EmployeeID) {
+    if(head_employee == NULL) { // no head, employee is the new head
+        return NULL;
+    }
+    else {
+        if(head_employee->employee_id > EmployeeID) {
+            if(head_employee->left == NULL) {
+                return head_employee;
+            }
+            return findMyEmployeeDaddy(head_employee->left.get(), EmployeeID);
+        }
+        else {
+            if(head_employee->right == NULL) {
+                return head_employee;
+            }
+            return findMyEmployeeDaddy(head_employee->right.get(), EmployeeID);
+        }
+    }
+}
+
+void *Init() {
+    DataStrcture *DS = new DataStrcture();
+    return (void*)DS;
+}
+
+StatusType AddCompany(void *DS, int CompanyID, int Value){
+    if(DS==NULL||CompanyID<=0||Value<=0){
+        return INVALID_INPUT;
+    }
+    if(findCompanyById(((DataStrcture*)DS)->company_head.get(),CompanyID)!=NULL){
+        return FAILURE;
+    }
+
+    Company* daddy_ptr=findMyCompanyDaddy(findCompanyById(((DataStrcture*)DS)->company_head.get(),CompanyID);
+    if(daddy_ptr==NULL){
+        ((DataStrcture*)DS)->company_head=std::shared_ptr<Company>(new Company(Value,CompanyID,NULL));
+    }
+
+}
 
 StatusType AddEmployee(void *DS, int EmployeeID, int CompanyID, int Salary, int Grade);
 
