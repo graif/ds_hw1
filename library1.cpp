@@ -110,7 +110,33 @@ StatusType AddCompany(void *DS, int CompanyID, int Value){
 
 }
 
-StatusType AddEmployee(void *DS, int EmployeeID, int CompanyID, int Salary, int Grade);
+StatusType AddEmployee(void *DS, int EmployeeID, int CompanyID, int Salary, int Grade) {
+    if((DS == NULL) || (EmployeeID <= 0) || (CompanyID <= 0) || (Salary <= 0) || (Grade < 0)) {
+        return INVALID_INPUT;
+    }
+
+    Company* c = findCompanyById(((DataStrcture*)DS)->company_head.get(), CompanyID);
+    Employee* e = findEmployeeById(((DataStrcture*)DS)->employee_head.get(), EmployeeID);
+    if((c == NULL) || e != NULL) return FAILURE; // company doesn't exist or employee already exists
+
+    Employee* daddy_e = findMyEmployeeDaddy(((DataStrcture*)DS)->employee_head.get(), EmployeeID);
+    if(daddy_e == nullptr) { // no head, employee is the new head
+        daddy_e = new Employee(EmployeeID, c, Salary, Grade, ((DataStrcture*)DS)->employee_head.get());
+    }
+    else {
+        if(daddy_e->employee_id > EmployeeID) {
+            daddy_e->left = std::shared_ptr<Employee>(new Employee(EmployeeID, c, Salary, Grade, ((DataStrcture*)DS)->employee_head.get()));
+        }
+        else {
+            daddy_e->right = std::shared_ptr<Employee>(new Employee(EmployeeID, c, Salary, Grade, ((DataStrcture*)DS)->employee_head.get()));
+        }
+    }
+
+    /*** need to add the employee's pointer to the pointers_employees tree as well!! */
+
+    if(daddy_e == NULL) return ALLOCATION_ERROR;
+    return SUCCESS;
+}
 
 StatusType RemoveCompany(void *DS, int CompanyID);
 

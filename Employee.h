@@ -6,6 +6,9 @@
 #define DS_HW1_EMPLOYEE_H
 #include "Company.h"
 using std::shared_ptr;
+
+class Company;
+
 class Employee {
 public:
     int employee_id;

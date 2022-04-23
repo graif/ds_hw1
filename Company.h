@@ -8,6 +8,9 @@
 #include "Employee.h"
 
 using std::shared_ptr;
+
+class Employee;
+
 class Company {
 public:
     int employee_count;
