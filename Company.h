@@ -26,5 +26,40 @@ public:
     int company_id;
 };
 
+Company* findMyCompanyDaddy(Company* head_company ,int CompanyID){
+    if(head_company == nullptr) { // no head, employee is the new head
+        return nullptr;
+    }
+    else {
+        if(head_company->company_id > CompanyID) {
+            if(head_company->left == nullptr) {
+                return head_company;
+            }
+            return findMyCompanyDaddy(head_company->left.get(), CompanyID);
+        }
+        else {
+            if(head_company->right == nullptr) {
+                return head_company;
+            }
+            return findMyCompanyDaddy(head_company->right.get(), CompanyID);
+        }
+    }
+}
+
+Company* findCompanyById(Company* head_company ,int CompanyID){
+    if(head_company==nullptr){
+        return nullptr;
+    }
+    if(head_company->company_id==CompanyID){
+        return head_company;
+    }
+    else if(head_company->company_id>CompanyID && head_company->right!=nullptr) {
+        return findCompanyById(head_company->right.get(), CompanyID);
+    }
+    else if(head_company->company_id<CompanyID && head_company->left!=nullptr) {
+        return findCompanyById(head_company->left.get(), CompanyID);
+    }
+    return nullptr;
+}
 
 #endif //DS_HW1_COMPANY_H

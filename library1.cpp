@@ -18,96 +18,39 @@ public:
     Employee* highest_earner_employee;
 };
 
-Company* findCompanyById(Company* head_company ,int CompanyID){
-    if(head_company==NULL){
-        return NULL;
-    }
-    if(head_company->company_id==CompanyID){
-        return head_company;
-    }
-    else if(head_company->company_id>CompanyID && head_company->right!=NULL) {
-        return findCompanyById(head_company->right.get(), CompanyID);
-    }
-    else if(head_company->company_id<CompanyID && head_company->left!=NULL) {
-        return findCompanyById(head_company->left.get(), CompanyID);
-    }
-    return NULL;
-}
 
-Employee* findEmployeeById(Employee* head_employee ,int EmployeeID){
-    if(head_employee==NULL){
-        return NULL;
-    }
-    if(head_employee->employee_id==EmployeeID){
-        return head_employee;
-    }
-    else if(head_employee->employee_id>EmployeeID && head_employee->right!=NULL) {
-        return findEmployeeById(head_employee->right.get(), EmployeeID);
-    }
-    else if(head_employee->employee_id<EmployeeID && head_employee->left!=NULL) {
-        return findEmployeeById(head_employee->left.get(), EmployeeID);
-    }
-    return NULL;
-}
-
-Company* findMyCompanyDaddy(Company* head_company ,int CompanyID){
-    if(head_company == NULL) { // no head, employee is the new head
-        return NULL;
-    }
-    else {
-        if(head_company->company_id > CompanyID) {
-            if(head_company->left == NULL) {
-                return head_company;
-            }
-            return findMyCompanyDaddy(head_company->left.get(), CompanyID);
-        }
-        else {
-            if(head_company->right == NULL) {
-                return head_company;
-            }
-            return findMyCompanyDaddy(head_company->right.get(), CompanyID);
-        }
-    }
-}
-
-Employee* findMyEmployeeDaddy(Employee* head_employee ,int EmployeeID) {
-    if(head_employee == NULL) { // no head, employee is the new head
-        return NULL;
-    }
-    else {
-        if(head_employee->employee_id > EmployeeID) {
-            if(head_employee->left == NULL) {
-                return head_employee;
-            }
-            return findMyEmployeeDaddy(head_employee->left.get(), EmployeeID);
-        }
-        else {
-            if(head_employee->right == NULL) {
-                return head_employee;
-            }
-            return findMyEmployeeDaddy(head_employee->right.get(), EmployeeID);
-        }
-    }
-}
 
 void *Init() {
+
     DataStrcture *DS = new DataStrcture();
     return (void*)DS;
+
 }
 
 StatusType AddCompany(void *DS, int CompanyID, int Value){
-    if(DS==NULL||CompanyID<=0||Value<=0){
+    try {
+    if(DS==nullptr||CompanyID<=0||Value<=0){
         return INVALID_INPUT;
     }
-    if(findCompanyById(((DataStrcture*)DS)->company_head.get(),CompanyID)!=NULL){
+    if(findCompanyById(((DataStrcture*)DS)->company_head.get(),CompanyID)!=nullptr){
         return FAILURE;
     }
 
     Company* daddy_ptr=findMyCompanyDaddy(findCompanyById(((DataStrcture*)DS)->company_head.get(),CompanyID), CompanyID);
-    if(daddy_ptr==NULL){
-        ((DataStrcture*)DS)->company_head=std::shared_ptr<Company>(new Company(Value,CompanyID,NULL));
+    if(daddy_ptr==nullptr){
+        ((DataStrcture*)DS)->company_head=std::shared_ptr<Company>(new Company(Value,CompanyID,nullptr));
+    }
+    else if(daddy_ptr->company_id>CompanyID){
+        daddy_ptr->left=std::shared_ptr<Company>(new Company(Value,CompanyID,nullptr));
+    }
+    else{
+        daddy_ptr->right=std::shared_ptr<Company>(new Company(Value,CompanyID,nullptr));
     }
 
+        }
+    catch(std::bad_alloc&) {
+        return ALLOCATION_ERROR;
+    }
 }
 
 StatusType AddEmployee(void *DS, int EmployeeID, int CompanyID, int Salary, int Grade) {
