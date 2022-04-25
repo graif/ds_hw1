@@ -103,7 +103,7 @@ StatusType AddCompany(void *DS, int CompanyID, int Value){
         return FAILURE;
     }
 
-    Company* daddy_ptr=findMyCompanyDaddy(findCompanyById(((DataStrcture*)DS)->company_head.get(),CompanyID);
+    Company* daddy_ptr=findMyCompanyDaddy(findCompanyById(((DataStrcture*)DS)->company_head.get(),CompanyID), CompanyID);
     if(daddy_ptr==NULL){
         ((DataStrcture*)DS)->company_head=std::shared_ptr<Company>(new Company(Value,CompanyID,NULL));
     }
