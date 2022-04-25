@@ -12,3 +12,7 @@ Pointer_employees::Pointer_employees(Pointer_employees *head):ptr_employee(ptr_e
     this->left=NULL;
     this->right=NULL;
 }
+
+void Pointer_employees::addEmployeeptr(Employee *ptr_employee) {
+
+}

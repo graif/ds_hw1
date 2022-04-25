@@ -63,38 +63,88 @@ StatusType AddEmployee(void *DS, int EmployeeID, int CompanyID, int Salary, int 
     if((c == nullptr) || e != nullptr) return FAILURE; // company doesn't exist or employee already exists
 
     Employee* daddy_e = findMyEmployeeDaddy(((DataStrcture*)DS)->employee_head.get(), EmployeeID);
-    if(daddy_e == nullptr) { // no head, employee is the new head
-        try {
-            ((DataStrcture*)DS)->employee_head = std::shared_ptr<Employee>(new Employee(EmployeeID, c, Salary, Grade, ((DataStrcture*)DS)->employee_head.get()));
-        }
-        catch(std::bad_alloc&) {
-            return ALLOCATION_ERROR;
+    try {
+        if (daddy_e == nullptr) { // no head, employee is the new head
+            ((DataStrcture *) DS)->employee_head = std::shared_ptr<Employee>(new Employee(EmployeeID, c, Salary, Grade, ((DataStrcture *) DS)->employee_head.get()));
+        } else {
+            if (daddy_e->employee_id > EmployeeID) {
+                daddy_e->left = std::shared_ptr<Employee>(new Employee(EmployeeID, c, Salary, Grade, ((DataStrcture *) DS)->employee_head.get()));
+            } else {
+                daddy_e->right = std::shared_ptr<Employee>(new Employee(EmployeeID, c, Salary, Grade, ((DataStrcture *) DS)->employee_head.get()));
+            }
         }
     }
-    else {
-        if(daddy_e->employee_id > EmployeeID) {
-            try {
-                daddy_e->left = std::shared_ptr<Employee>(new Employee(EmployeeID, c, Salary, Grade, ((DataStrcture*)DS)->employee_head.get()));
-            }
-            catch(std::bad_alloc&) {
-                return ALLOCATION_ERROR;
-            }
+    catch (std::bad_alloc &) {
+        return ALLOCATION_ERROR;
+    }
 
-        }
-        else {
-            try {
-                daddy_e->right = std::shared_ptr<Employee>(new Employee(EmployeeID, c, Salary, Grade, ((DataStrcture*)DS)->employee_head.get()));
-            }
-            catch(std::bad_alloc&) {
-                return ALLOCATION_ERROR;
-            }
-        }
+    if(((DataStrcture *) DS)->highest_earner_employee == nullptr || // if no highest earner currently exists
+            ((DataStrcture *) DS)->highest_earner_employee->salary <= Salary || // or if current highest earner, earns less than our employee
+            (((DataStrcture *) DS)->highest_earner_employee->salary == Salary && // or if he earns exactly the same as our employee
+             ((DataStrcture *) DS)->highest_earner_employee->employee_id > EmployeeID)) { // but also has a higher employee ID
+        ((DataStrcture *) DS)->highest_earner_employee = daddy_e; // or left or right, need to change
     }
+
+    if(c->highest_earner_employee == nullptr || // same as above but for the highest earner for the specific company
+            c->highest_earner_employee->salary <= Salary ||
+       (c->highest_earner_employee->salary == Salary &&
+               c->highest_earner_employee->employee_id > EmployeeID)) {
+        c->highest_earner_employee = daddy_e; // or left or right, need to change
+    }
+
+    (c->employee_count)++; // raise the company's employee count by 1
 
     /*** need to add the employee's pointer to the pointers_employees tree as well!! */
+    /* if employees pointers is empty, initialize one */
 
     return SUCCESS;
 }
+
+/* // backup command
+ * StatusType AddEmployee(void *DS, int EmployeeID, int CompanyID, int Salary, int Grade) {
+    if((DS == nullptr) || (EmployeeID <= 0) || (CompanyID <= 0) || (Salary <= 0) || (Grade < 0)) {
+        return INVALID_INPUT;
+    }
+
+    Company* c = findCompanyById(((DataStrcture*)DS)->company_head.get(), CompanyID);
+    Employee* e = findEmployeeById(((DataStrcture*)DS)->employee_head.get(), EmployeeID);
+    if((c == nullptr) || e != nullptr) return FAILURE; // company doesn't exist or employee already exists
+
+    Employee* daddy_e = findMyEmployeeDaddy(((DataStrcture*)DS)->employee_head.get(), EmployeeID);
+    try {
+        if (daddy_e == nullptr) { // no head, employee is the new head
+            ((DataStrcture *) DS)->employee_head = std::shared_ptr<Employee>(new Employee(EmployeeID, c, Salary, Grade, ((DataStrcture *) DS)->employee_head.get()));
+        } else {
+            if (daddy_e->employee_id > EmployeeID) {
+                daddy_e->left = std::shared_ptr<Employee>(new Employee(EmployeeID, c, Salary, Grade, ((DataStrcture *) DS)->employee_head.get()));
+            } else {
+                daddy_e->right = std::shared_ptr<Employee>(new Employee(EmployeeID, c, Salary, Grade, ((DataStrcture *) DS)->employee_head.get()));
+            }
+        }
+    }
+    catch (std::bad_alloc &) {
+        return ALLOCATION_ERROR;
+    }
+
+    if(((DataStrcture *) DS)->highest_earner_employee == nullptr || // if no highest earner currently exists
+            ((DataStrcture *) DS)->highest_earner_employee->salary <= Salary || // or if current highest earner, earns less than our employee
+            (((DataStrcture *) DS)->highest_earner_employee->salary == Salary && // or if he earns exactly the same as our employee
+             ((DataStrcture *) DS)->highest_earner_employee->employee_id > EmployeeID)) { // but also has a higher employee ID
+        ((DataStrcture *) DS)->highest_earner_employee = daddy_e; // or left or right, need to change
+    }
+
+    if(c->highest_earner_employee == nullptr || // same as above but for the highest earner for the specific company
+            c->highest_earner_employee->salary <= Salary ||
+       (c->highest_earner_employee->salary == Salary &&
+               c->highest_earner_employee->employee_id > EmployeeID)) {
+        c->highest_earner_employee = daddy_e; // or left or right, need to change
+    }
+
+    (c->employee_count)++; // raise the company's employee count by 1
+
+return SUCCESS;
+}
+ */
 
 StatusType RemoveCompany(void *DS, int CompanyID);
 
