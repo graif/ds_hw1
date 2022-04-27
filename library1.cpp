@@ -84,13 +84,17 @@ StatusType AddEmployee(void *DS, int EmployeeID, int CompanyID, int Salary, int 
 
 
     try {
-        Employee *e = new Employee(EmployeeID, c, Salary, Grade); // add check if allocation failed
-        if (((DataStrcture *) DS)->employee_head != nullptr) { // if tree not empty, use generic tree func:
-            StatusType status = addSubElement(((DataStrcture *) DS)->employee_head.get(), e, EmployeeID);
-            if (status != SUCCESS) return status;
-        } else { // if tree currently empty, initialize first element manually
+        /* Allocating a new Employee and trying to add it to tree as subElement
+         * If the tree is empty, will receive INVALID_INPUT and manually set the new Employee as the new head
+         * This is IMPORTANT because we need the function addSubElement to always happen
+         * as it contains all the necessary checks*/
+
+        Employee *e = new Employee(EmployeeID, c, Salary, Grade);
+        StatusType status = addSubElement(((DataStrcture *) DS)->employee_head.get(), e, EmployeeID);
+        if (status == INVALID_INPUT && EmployeeID > 0) { // employee = new head:
             ((DataStrcture *) DS)->employee_head = std::shared_ptr<tree<Employee>>(new tree<Employee>(EmployeeID, e));
         }
+        else if (status != SUCCESS) return status;
 
         UpdateHighestEarner((DataStrcture *)DS, e);
         UpdateCompanyHighestEarner(c->element, e);
