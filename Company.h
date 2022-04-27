@@ -14,19 +14,18 @@ class Employee;
 class Company {
 public:
     int employee_count;
-    Employee* highest_earner_employee;
+    Employee *highest_earner_employee;
     int value;
-    Employee* employees_pointers;
-    shared_ptr<Company> head;
-    shared_ptr<Company> left;
-    shared_ptr<Company> right;
-    Company( int value, int company_id,Company *head);
-    ~Company()=default;
+    Employee *employees_pointers;
+
+    Company(int value, int company_id);
+
+    ~Company() = default;
 
     int company_id;
 };
 
-Company* findMyCompanyDaddy(Company* head_company ,int CompanyID){
+/*Company* findMyCompanyDaddy(Company* head_company ,int CompanyID){
     if(head_company == nullptr) { // no head, employee is the new head
         return nullptr;
     }
@@ -60,6 +59,6 @@ Company* findCompanyById(Company* head_company ,int CompanyID){
         return findCompanyById(head_company->left.get(), CompanyID);
     }
     return nullptr;
-}
+}*/
 
 #endif //DS_HW1_COMPANY_H

@@ -11,81 +11,73 @@
 using std::shared_ptr;
 
 
-template <class Element>
+template<class Element>
 class tree {
 public:
     int id;
-    Element* element;
-    shared_ptr<tree> head;
+    Element *element;
     shared_ptr<tree> left;
     shared_ptr<tree> right;
-    tree()=default;
-    virtual ~tree();
+
+    tree(int id, Element *element) : id(id), element(element) {};
+
+    virtual ~tree() = default;
 };
 
-template <class Element>
-tree<Element>* findMyDaddy(tree<Element>* head ,int id){
-    if(head == nullptr) { // no head, employee is the new head
+template<class Element>
+tree<Element> *findMyDaddy(tree<Element> *head, int id) {
+    if (head == nullptr) { // no head, employee is the new head
         return nullptr;
-    }
-    else {
-        if(head->id > id) {
-            if(head->left == nullptr) {
+    } else {
+        if (head->id > id) {
+            if (head->left == nullptr) {
                 return head;
             }
             return findMyDaddy(head->left.get(), id);
-        }
-        else {
-            if(head->right == nullptr) {
+        } else {
+            if (head->right == nullptr) {
                 return head;
             }
             return findMyDaddy(head->right.get(), id);
         }
     }
 }
-template <class Element>
-tree<Element>* findById(tree<Element>* head ,int id){
-    if(head==nullptr){
+
+template<class Element>
+tree<Element> *findById(tree<Element> *head, int id) {
+    if (head == nullptr) {
         return nullptr;
     }
-    if(head->id==id){
+    if (head->id == id) {
         return head;
-    }
-    else if(head->id>id && head->right!=nullptr) {
+    } else if (head->id > id && head->right != nullptr) {
         return findById(head->right.get(), id);
-    }
-    else if(head->id<id && head->left!=nullptr) {
+    } else if (head->id < id && head->left != nullptr) {
         return findById(head->left.get(), id);
     }
     return nullptr;
 }
 
-template <class Element>
-StatusType addElement(tree<Element>* head ,Element elem,int id){
+template<class Element>
+StatusType addSubElement(tree<Element> *head, Element *elem, int id) {
     try {
-        if(id<=0){
-            return INVALID_INPUT;
+        if (id <= 0 || head == nullptr) { // added check if head pointer is null, can't proceed
+            return INVALID_INPUT; // need to make sure we never send null head pointer
         }
-        if(findById(head,id)!=nullptr){
+        if (findById(head, id) != nullptr) { // element already exists in tree
             return FAILURE;
         }
-        //if(findById(head,id){}
-        //make sure that the id is valid
-        tree<Element>* daddy_ptr=findMyDaddy(head,id);
-        if(daddy_ptr==nullptr){
-          head->head=std::shared_ptr<tree<Element>>(new tree<Element>(elem,id)); // need to correct this line, head is NULL and we need to save to it
+        tree<Element> *daddy_ptr = findMyDaddy(head, id);
+        if (daddy_ptr->id > id) {
+            daddy_ptr->left = std::shared_ptr<tree<Element>>(new tree<Element>(id, elem));
+        } else {
+            daddy_ptr->right = std::shared_ptr<tree<Element>>(new tree<Element>(id, elem));
         }
-        else if(daddy_ptr->id > id){
-            daddy_ptr->left=std::shared_ptr<tree<Element>>(new tree<Element>(elem,id));
-        }
-        else{
-            daddy_ptr->right=std::shared_ptr<tree<Element>>(new tree<Element>(elem,id));
-        }
-
     }
-    catch(std::bad_alloc&) {
+    catch (std::bad_alloc &) {
         return ALLOCATION_ERROR;
     }
+    return SUCCESS;
 }
 
 
