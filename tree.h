@@ -15,6 +15,7 @@ template<class Element>
 class tree {
 public:
     int id;
+    int height;
     Element *element;
     shared_ptr<tree> left;
     shared_ptr<tree> right;
