@@ -17,9 +17,7 @@ public:
     Employee *highest_earner_employee;
     int value;
     Employee *employees_pointers;
-
     Company(int value, int company_id);
-
     ~Company() = default;
 
     int company_id;

@@ -15,11 +15,11 @@ class Company;
 class Employee {
 public:
     int employee_id;
-    tree<Company> *company; // do we want to keep the company element here instead? (without left/right)
+    Company *company;
     int salary;
     int grade;
 
-    Employee(int employee_id, tree<Company> *company, int salary, int grade);
+    Employee(int employee_id,Company *company, int salary, int grade);
 
     ~Employee() = default;
 };
