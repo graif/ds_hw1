@@ -46,7 +46,7 @@ public:
 
     tree<Element> *  eraseElement(int id,StatusType* status) {
         // need to address deletion of head node at a higher scope (bahootz)
-        tree<Element> * element_tree= findById<Element>(id);
+        tree<Element> * element_tree= findById<Element>(this,id);
         if(id<= 0){
             *status=INVALID_INPUT;
             return this;
@@ -68,15 +68,73 @@ public:
 
 };
 template <class Element>
-tree<Element> * deleteElementRecursively( tree<Element> * head ,int id,StatusType* status){
+tree<Element> * deleteElementRecursively( tree<Element> * head ,int id,StatusType* status) {
+    if (head == nullptr) {
+        return head;
+    }
+    //case of 1/0 child
+    tree<Element> *temp;
+
+    if (head->left == nullptr || head->right == nullptr) {
+        if (head->left == nullptr && head->right == nullptr) {
+            //make sure that we don't have memory leak at that point, shared ptr suppose to free
+            head->element = nullptr;
+            head = nullptr;
+        } else {
+            temp = head->left ? head->left.get() : head->right.get();
+            head->element = temp->element;
+            head->id = temp->id;
+            temp->element = nullptr;
+            temp = nullptr;
+        }
+        *status = SUCCESS;
+    }
+        //2 child case
+    else {
+        temp = head;
+        while (temp->left != nullptr) {
+            temp = temp->left.get();
+        }
+        head->element = temp->element;
+        head->id = temp->id;
+
+        head->right = shared_ptr<tree<Element>>(deleteElementRecursively
+                (findById<Element>(head->right.get(),id), temp->id, status));
+    }
+    if(head== nullptr)
+        return nullptr;
+    *status = SUCCESS;
+    head->height = getMax(getHeight(head->left), getHeight(head->right)) +1;
+    int b = head->getBalance();
+
+    // LL
+    if (b > 1 && head->left.get()->getBalance()>=0) {
+        return right_rot<Element>(head);
+    }
+
+    // RR
+    if (b < -1 && head->right.get()->getBalance()<=0) {
+        return left_rot<Element>(head);
+    }
+
+    // LR
+    if (b > 1 &&head->left.get()->getBalance()<0)
+    {
+        head->left = shared_ptr<tree<Element>>(left_rot<Element>(head->left.get()));
+        return right_rot<Element>(head);
+    }
+
+    // RL
+    if (b < -1 && head->right.get()->getBalance()>0)
+    {
+        head->right = shared_ptr<tree<Element>>(right_rot<Element>(head->right.get()));
+        return left_rot<Element>(head);
+    }
+    // do nothing:
+    return head;
 
 }
 
-int getMax(int a, int b){
-    if(a>b)
-        return a;
-    return b;
-}
 template<class Element>
 int getHeight(shared_ptr<tree<Element>> head){
     if(head== nullptr)
@@ -150,7 +208,7 @@ tree<Element>* left_rot(tree<Element>* head){
     head->height=getMax(getHeight(head->left),getHeight(head->right))+1;
     temp1->height=getMax(getHeight(temp1->left),getHeight(temp1->right))+1;
 
-    return temp1;
+    return temp1.get();
 }
 
 template <class Element>
@@ -163,7 +221,7 @@ tree<Element>* right_rot(tree<Element>* head){
     head->height=getMax(getHeight(head->left),getHeight(head->right))+1;
     temp1->height=getMax(getHeight(temp1->left),getHeight(temp1->right))+1;
 
-    return temp1;
+    return temp1.get();
 }
 
 template<class Element>
@@ -175,11 +233,11 @@ tree<Element>* addElementRecursively(tree<Element>* head,tree<Element>* element_
     }
 
     if (head->id > element_tree->id) {
-        head->left = shared_ptr<tree<Element>>(addElementRecursively(head->left,element_tree, status));
+        head->left = shared_ptr<tree<Element>>(addElementRecursively(head->left.get(),element_tree, status));
     }
 
     else if (head->id < element_tree->id) {
-        head->right = shared_ptr<tree<Element>>(addElementRecursively(head->right,element_tree, status));
+        head->right = shared_ptr<tree<Element>>(addElementRecursively(head->right.get(),element_tree, status));
  }
     else { // cant be equal
         *status = FAILURE; // already exists in tree
@@ -218,6 +276,11 @@ tree<Element>* addElementRecursively(tree<Element>* head,tree<Element>* element_
     return head;
 }
 
+int getMax(int a, int b){
+    if(a>b)
+        return a;
+    return b;
+}
 
 
 #endif //DS_HW1_TREE_H

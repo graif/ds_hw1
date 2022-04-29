@@ -6,6 +6,7 @@
 
 #include <memory>
 #include "Employee.h"
+#include "tree.h"
 
 using std::shared_ptr;
 

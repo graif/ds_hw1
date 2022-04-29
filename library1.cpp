@@ -125,9 +125,7 @@ StatusType AddEmployee(void *DS, int EmployeeID, int CompanyID, int Salary, int 
 
 StatusType RemoveCompany(void *DS, int CompanyID);
 
-StatusType RemoveEmployee(void *DS, int EmployeeID) {
-
-}
+StatusType RemoveEmployee(void *DS, int EmployeeID);
 
 StatusType GetCompanyInfo(void *DS, int CompanyID, int *Value, int *NumEmployees) {
     if((DS == nullptr) || (CompanyID <= 0) || (Value == nullptr) || (NumEmployees == nullptr)) {

@@ -13,12 +13,11 @@
 /* command line.                                                           */
 /***************************************************************************/
 
-#include <assert.h>
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "library1.h"
-#include "Pointer_employees.h"
 
 #include <iostream>
 using namespace std;
