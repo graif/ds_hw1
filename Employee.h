@@ -14,12 +14,12 @@ class Company;
 
 class Employee {
 public:
-    int employee_id;
+    int id;
     Company *company;
     int salary;
     int grade;
 
-    Employee(int employee_id,Company *company, int salary, int grade);
+    Employee(int id,Company *company, int salary, int grade);
 
     ~Employee() = default;
 };

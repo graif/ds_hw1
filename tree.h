@@ -30,8 +30,8 @@ public:
             return this;
         }
         try {
-            tree<Element> *t = new tree();
-            tree<Element> *T2 = addElementRecursively(t, &status);
+            tree<Element> *t = new tree(e->id);
+            tree<Element> *T = addElementRecursively(this,t, status);
             if(*status != SUCCESS) {
                 delete t;
                 return nullptr;
@@ -40,7 +40,7 @@ public:
         }
         catch (std::bad_alloc &) {
             *status = ALLOCATION_ERROR;
-            return nullptr;
+            return this;
         }
     }
 
