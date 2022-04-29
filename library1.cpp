@@ -23,10 +23,17 @@ public:
 
 
 void *Init() {
+    try {
+        DataStrcture *DS = new DataStrcture();
+        DS->highest_earner_employee = nullptr;
+        DS->company_head = nullptr;
+        DS->employee_head = nullptr;
+        return (void *) DS;
 
-    DataStrcture *DS = new DataStrcture();
-    return (void *) DS;
-
+    }
+    catch (std::bad_alloc &) {
+        return nullptr;
+    }
 }
 
 StatusType AddCompany(void *DS, int CompanyID, int Value) {
@@ -34,20 +41,16 @@ StatusType AddCompany(void *DS, int CompanyID, int Value) {
         if (DS == nullptr || CompanyID <= 0 || Value <= 0) {
             return INVALID_INPUT;
         }
-        if (findCompanyById(((DataStrcture *) DS)->company_head.get(), CompanyID) != nullptr) {
-            return FAILURE;
+        shared_ptr<Company> c = shared_ptr<Company>(new Company(Value,CompanyID));
+        if(((DataStrcture*)DS)->company_head == nullptr) {
+            ((DataStrcture*)DS)->company_head = shared_ptr<tree<Company>>(new tree<Company>(CompanyID,c.get()));
         }
-
-        Company *daddy_ptr = findMyCompanyDaddy(findCompanyById(((DataStrcture *) DS)->company_head.get(), CompanyID),
-                                                CompanyID);
-        if (daddy_ptr == nullptr) {
-            ((DataStrcture *) DS)->company_head = std::shared_ptr<Company>(new Company(Value, CompanyID, nullptr));
-        } else if (daddy_ptr->company_id > CompanyID) {
-            daddy_ptr->left = std::shared_ptr<Company>(new Company(Value, CompanyID, nullptr));
-        } else {
-            daddy_ptr->right = std::shared_ptr<Company>(new Company(Value, CompanyID, nullptr));
+        else {
+            StatusType status = FAILURE;
+            ((DataStrcture *) DS)->company_head->addElement(c.get(), &status);
+            if(status != SUCCESS) return status;
         }
-
+        return SUCCESS;
     }
     catch (std::bad_alloc &) {
         return ALLOCATION_ERROR;

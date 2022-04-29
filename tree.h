@@ -16,61 +16,19 @@ class tree {
 public:
     int id;
     int height;
-    Element *element;
-    shared_ptr<tree> left;
-    shared_ptr<tree> right;
+    shared_ptr<Element> element;
+    shared_ptr<tree<Element>> left;
+    shared_ptr<tree<Element>> right;
 
     tree(int id) : id(id) {};
+    tree(int id, Element* element) : id(id), element(shared_ptr<Element>(element)) {};
      ~tree() = default;
 
-    tree<Element>* addElementRecursively(tree<Element>* node, StatusType* status)
-    {
-        if(node == nullptr)
-            return nullptr;
-
-        if (node->id < this->id) {
-            this->left = this->addElementRecursively(this->left.get());
-        }
-        else if (node->id > this->id) {
-            this->right = this->addElementRecursively(this->right.get());
-        }
-        else { // cant be equal
+    tree<Element> * addElement(Element* e, StatusType* status) {
+        if(e == nullptr || e->id <= 0) {
+            *status = INVALID_INPUT;
             return this;
         }
-
-        *status = SUCCESS;
-        this->height = getMax(getHeight(this->left.get()), getHeight(this->right.get()) + 1);
-        int b = this->getBalance();
-
-        // LL
-        if (b > 1 && node->id < this->left.get()->id) {
-            return right_rot<Element>(this);
-        }
-
-        // RR
-        if (b < -1 && node->id > this->right.get()->id) {
-            return  left_rot<Element>(this);
-        }
-
-        // LR
-        if (b > 1 && node->id > this->left.get()->id)
-        {
-            this->left =shared_ptr<tree<Element>>(left_rot<Element>(this->left.get()));
-            return right_rot<Element>(this);
-        }
-
-        // RL
-        if (b < -1 && node->id < this->right->id)
-        {
-            this->right = shared_ptr<tree<Element>>(right_rot<Element>(this->right.get()));
-            return left_rot<Element>(this);
-        }
-
-        // do nothing:
-        return this;
-    }
-
-    tree<Element>* addElement(StatusType* status) {
         try {
             tree<Element> *t = new tree();
             tree<Element> *T2 = addElementRecursively(t, &status);
@@ -78,7 +36,7 @@ public:
                 delete t;
                 return nullptr;
             }
-            return T2;
+            return T;
         }
         catch (std::bad_alloc &) {
             *status = ALLOCATION_ERROR;
@@ -86,15 +44,33 @@ public:
         }
     }
 
-    StatusType eraseElement(int id) {
+    tree<Element> *  eraseElement(int id,StatusType* status) {
         // need to address deletion of head node at a higher scope (bahootz)
+        tree<Element> * element_tree= findById<Element>(id);
+        if(id<= 0){
+            *status=INVALID_INPUT;
+            return this;
+        }
+        if(element_tree== nullptr){
+            *status=FAILURE;
+            return this;
+        }
+
+        return deleteElementRecursively(element_tree,id,status);
+
     }
+
+
 
     int getBalance() {
         return (getHeight(this->left) - getHeight(this->right));
     }
 
 };
+template <class Element>
+tree<Element> * deleteElementRecursively( tree<Element> * head ,int id,StatusType* status){
+
+}
 
 int getMax(int a, int b){
     if(a>b)
@@ -102,10 +78,10 @@ int getMax(int a, int b){
     return b;
 }
 template<class Element>
-int getHeight(tree<Element> *head){
+int getHeight(shared_ptr<tree<Element>> head){
     if(head== nullptr)
         return 0;
-    return head->height;
+    return head.get()->height;
 }
 
 template<class Element>
@@ -141,7 +117,7 @@ tree<Element> *findById(tree<Element> *head, int id) {
     }
     return nullptr;
 }
-
+/**
 template<class Element>
 StatusType addSubElement(tree<Element> *head, Element *elem, int id) {
     try {
@@ -163,7 +139,7 @@ StatusType addSubElement(tree<Element> *head, Element *elem, int id) {
     }
     return SUCCESS;
 }
-
+**/
 template <class Element>
 tree<Element>* left_rot(tree<Element>* head){
     shared_ptr<tree<Element>> temp1=head->right;
@@ -171,7 +147,7 @@ tree<Element>* left_rot(tree<Element>* head){
     temp1->left=shared_ptr<tree<Element>>(head);
     head->right=temp2;
 
-    head->height=getMax(getHeight(head->left.get()),getHeight(head->right.get()))+1;
+    head->height=getMax(getHeight(head->left),getHeight(head->right))+1;
     temp1->height=getMax(getHeight(temp1->left),getHeight(temp1->right))+1;
 
     return temp1;
@@ -184,11 +160,64 @@ tree<Element>* right_rot(tree<Element>* head){
     temp1->right=shared_ptr<tree<Element>>(head);
     head->left=temp2;
 
-    head->height=getMax(getHeight(head->left.get()),getHeight(head->right.get()))+1;
+    head->height=getMax(getHeight(head->left),getHeight(head->right))+1;
     temp1->height=getMax(getHeight(temp1->left),getHeight(temp1->right))+1;
 
     return temp1;
 }
+
+template<class Element>
+//not sure if it cover case of inserting element that will be head
+tree<Element>* addElementRecursively(tree<Element>* head,tree<Element>* element_tree, StatusType* status)
+{
+    if(head== nullptr){
+        return element_tree;
+    }
+
+    if (head->id > element_tree->id) {
+        head->left = shared_ptr<tree<Element>>(addElementRecursively(head->left,element_tree, status));
+    }
+
+    else if (head->id < element_tree->id) {
+        head->right = shared_ptr<tree<Element>>(addElementRecursively(head->right,element_tree, status));
+ }
+    else { // cant be equal
+        *status = FAILURE; // already exists in tree
+        return element_tree;
+    }
+
+    *status = SUCCESS;
+    head->height = getMax(getHeight(head->left), getHeight(head->right)) +1;
+    int b = head->getBalance();
+
+    // LL
+    if (b > 1 && element_tree->id < head->left.get()->id) {
+        return right_rot<Element>(head);
+    }
+
+    // RR
+    if (b < -1 && element_tree->id < head->right.get()->id) {
+        return left_rot<Element>(head);
+    }
+
+    // LR
+    if (b > 1 && element_tree->id > head->left.get()->id)
+    {
+        head->left = shared_ptr<tree<Element>>(left_rot<Element>(head->left.get()));
+        return right_rot<Element>(head);
+    }
+
+    // RL
+    if (b < -1 && element_tree->id <  head->right.get()->id)
+    {
+        head->right = shared_ptr<tree<Element>>(right_rot<Element>(head->right.get()));
+        return left_rot<Element>(head);
+    }
+
+    // do nothing:
+    return head;
+}
+
 
 
 #endif //DS_HW1_TREE_H
