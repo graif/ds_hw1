@@ -47,8 +47,11 @@ StatusType AddCompany(void *DS, int CompanyID, int Value) {
         }
         else {
             StatusType status = FAILURE;
-            ((DataStrcture *) DS)->company_head->addElement(c.get(), &status);
-            if(status != SUCCESS) return status;
+            tree<Company> * temp = ((DataStrcture *) DS)->company_head->addElement(c.get(), &status);
+            if(status != SUCCESS) {
+                ((DataStrcture *) DS)->company_head=std::shared_ptr<tree<Company>>(temp);
+                return status;
+            }
         }
         return SUCCESS;
     }

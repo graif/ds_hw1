@@ -60,13 +60,12 @@ public:
 
     }
 
-
-
     int getBalance() {
         return (getHeight(this->left) - getHeight(this->right));
     }
 
 };
+
 template <class Element>
 tree<Element> * deleteElementRecursively( tree<Element> * head ,int id,StatusType* status) {
     if (head == nullptr) {
@@ -101,6 +100,8 @@ tree<Element> * deleteElementRecursively( tree<Element> * head ,int id,StatusTyp
         head->right = shared_ptr<tree<Element>>(deleteElementRecursively
                 (findById<Element>(head->right.get(),id), temp->id, status));
     }
+
+
     if(head== nullptr)
         return nullptr;
     *status = SUCCESS;
@@ -276,7 +277,7 @@ tree<Element>* addElementRecursively(tree<Element>* head,tree<Element>* element_
     return head;
 }
 
-int getMax(int a, int b){
+static int getMax(int a, int b){
     if(a>b)
         return a;
     return b;
