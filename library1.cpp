@@ -199,8 +199,9 @@ StatusType HireEmployee(void *DS, int EmployeeID, int NewCompanyID) {
     e->element->company = c->element.get(); // update employee's company
 
     // add employee to new company's pointers tree:
-    e->element->company->employees_pointers->addElement(e->element.get(), &status);
+    tree<Employee>* temp = e->element->company->employees_pointers->addElement(e->element.get(), &status);
     if(status != SUCCESS) return status;
+    e->element->company->employees_pointers = shared_ptr<tree<Employee>>(temp);
 
     return SUCCESS;
 }
