@@ -96,7 +96,7 @@ StatusType AddEmployee(void *DS, int EmployeeID, int CompanyID, int Salary, int 
         }
         else {
             StatusType status = FAILURE;
-            ((DataStrcture *) DS)->employee_head->addElement(e.get(), &status);
+            tree<Employee>* temp = ((DataStrcture *) DS)->employee_head->addElement(e.get(), &status);
             if(status != SUCCESS) return status;
         }
         UpdateHighestEarner((DataStrcture *)DS, e.get());
