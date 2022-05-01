@@ -18,6 +18,7 @@ public:
     Employee *highest_earner_employee;
     int value;
     shared_ptr<tree<Employee>> employees_pointers;
+    shared_ptr<tree<Employee>> employees_pointers_by_salary;
     Company(int value, int company_id);
     ~Company() = default;
 

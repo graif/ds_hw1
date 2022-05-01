@@ -14,7 +14,7 @@ using std::shared_ptr;
 template<class Element>
 class tree {
 public:
-    int id;
+    int id; //iterator
     int height;
     shared_ptr<Element> element;
     shared_ptr<tree<Element>> left;
@@ -22,16 +22,54 @@ public:
 
     tree(int id) : id(id) {};
     tree(int id, Element* element) : id(id), element(shared_ptr<Element>(element)) {};
-     ~tree() = default;
+     ~tree() {
+             clear<Element>(this->left.get());
+             clear<Element>(this->right.get());
+             this->element= nullptr;
+             free(this);
+     };
 
-    tree<Element> * addElement(Element* e, StatusType* status) {
-        if(e == nullptr || e->id <= 0) {
+     /**
+      * the func clear the tree (deallocate element and tree node)
+      * @tparam Element
+      * @param tree
+      */
+    template<class Element>
+     void clear(tree<Element>* tree){
+         if(tree== nullptr){
+             return;
+         }
+        if(tree->left!= nullptr){
+            tree->element= nullptr;
+            tree = nullptr;
+            return;
+        }
+        if(tree->right!= nullptr){
+            tree->element= nullptr;
+            tree= nullptr;
+            return;
+        }
+        tree->element= nullptr;
+        tree= nullptr;
+        return;
+
+     }
+
+     /**
+      * the func add element to a tree by iterator (can be id or salary in our cases)
+      * @param e
+      * @param iterator
+      * @param status
+      * @return
+      */
+    tree<Element> * addElement(Element* e,int iterator, StatusType* status) {
+        if(e == nullptr || iterator <= 0) {
             *status = INVALID_INPUT;
             return this;
         }
         try {
-            tree<Element> *t = new tree(e->id);
-            tree<Element> *T = addElementRecursively(this,t, status);
+            tree<Element> *t = new tree(iterator);
+            tree<Element> *T = addElementRecursively(this,t,iterator, status);
             if(*status != SUCCESS) {
                 delete t;
                 return nullptr;
@@ -43,7 +81,13 @@ public:
             return this;
         }
     }
-
+    /**
+       * the func erase element from a tree by iterator (can be id or salary in our cases)
+       * @param e
+       * @param iterator
+       * @param status
+       * @return
+       */
     tree<Element> *  eraseElement(int id,StatusType* status) {
         // need to address deletion of head node at a higher scope (bahootz)
         tree<Element> * element_tree= findById<Element>(this,id);
@@ -60,12 +104,24 @@ public:
 
     }
 
+    /**
+     * the func return the balance height of the curr node
+     * @return
+     */
     int getBalance() {
         return (getHeight(this->left) - getHeight(this->right));
     }
 
 };
 
+/**
+ * the func help the delete func to erase element recursively
+ * @tparam Element
+ * @param head
+ * @param id
+ * @param status
+ * @return
+ */
 template <class Element>
 tree<Element> * deleteElementRecursively( tree<Element> * head ,int id,StatusType* status) {
     if (head == nullptr) {
@@ -136,6 +192,12 @@ tree<Element> * deleteElementRecursively( tree<Element> * head ,int id,StatusTyp
 
 }
 
+/**
+ * the func return the height of a node
+ * @tparam Element
+ * @param head
+ * @return
+ */
 template<class Element>
 int getHeight(shared_ptr<tree<Element>> head){
     if(head== nullptr)
@@ -143,6 +205,14 @@ int getHeight(shared_ptr<tree<Element>> head){
     return head.get()->height;
 }
 
+/**
+ * the func get a tree and a element and return pointer for the daddy node of the element. if not found
+ * the func return nullptr
+ * @tparam Element
+ * @param head
+ * @param id
+ * @return
+ */
 template<class Element>
 tree<Element> *findMyDaddy(tree<Element> *head, int id) {
     if (head == nullptr) { // no head, employee is the new head
@@ -162,6 +232,14 @@ tree<Element> *findMyDaddy(tree<Element> *head, int id) {
     }
 }
 
+/**
+ *  the func get a tree and id and return the node  of the element. if not found
+ * the func return nullptr
+ * @tparam Element
+ * @param head
+ * @param id
+ * @return
+ */
 template<class Element>
 tree<Element> *findById(tree<Element> *head, int id) {
     if (head == nullptr) {
@@ -176,29 +254,8 @@ tree<Element> *findById(tree<Element> *head, int id) {
     }
     return nullptr;
 }
-/**
-template<class Element>
-StatusType addSubElement(tree<Element> *head, Element *elem, int id) {
-    try {
-        if (id <= 0 || head == nullptr) { // added check if head pointer is null, can't proceed
-            return INVALID_INPUT; // need to make sure we never send null head pointer
-        }
-        if (findById(head, id) != nullptr) { // element already exists in tree
-            return FAILURE;
-        }
-        tree<Element> *daddy_ptr = findMyDaddy(head, id);
-        if (daddy_ptr->id > id) {
-            daddy_ptr->left = std::shared_ptr<tree<Element>>(new tree<Element>(id, elem));
-        } else {
-            daddy_ptr->right = std::shared_ptr<tree<Element>>(new tree<Element>(id, elem));
-        }
-    }
-    catch (std::bad_alloc &) {
-        return ALLOCATION_ERROR;
-    }
-    return SUCCESS;
-}
-**/
+
+/*******************************************   rotate functions   ***********************************************************/
 template <class Element>
 tree<Element>* left_rot(tree<Element>* head){
     shared_ptr<tree<Element>> temp1=head->right;
@@ -227,18 +284,18 @@ tree<Element>* right_rot(tree<Element>* head){
 
 template<class Element>
 //not sure if it cover case of inserting element that will be head
-tree<Element>* addElementRecursively(tree<Element>* head,tree<Element>* element_tree, StatusType* status)
+tree<Element>* addElementRecursively(tree<Element>* head,tree<Element>* element_tree,int iterator, StatusType* status)
 {
     if(head== nullptr){
         return element_tree;
     }
 
-    if (head->id > element_tree->id) {
-        head->left = shared_ptr<tree<Element>>(addElementRecursively(head->left.get(),element_tree, status));
+    if (head->id > iterator) {
+        head->left = shared_ptr<tree<Element>>(addElementRecursively(head->left.get(),element_tree,iterator, status));
     }
 
-    else if (head->id < element_tree->id) {
-        head->right = shared_ptr<tree<Element>>(addElementRecursively(head->right.get(),element_tree, status));
+    else if (head->id < iterator) {
+        head->right = shared_ptr<tree<Element>>(addElementRecursively(head->right.get(),element_tree,iterator, status));
  }
     else { // cant be equal
         *status = FAILURE; // already exists in tree
@@ -250,24 +307,24 @@ tree<Element>* addElementRecursively(tree<Element>* head,tree<Element>* element_
     int b = head->getBalance();
 
     // LL
-    if (b > 1 && element_tree->id < head->left.get()->id) {
+    if (b > 1 && iterator < head->left.get()->id) {
         return right_rot<Element>(head);
     }
 
     // RR
-    if (b < -1 && element_tree->id < head->right.get()->id) {
+    if (b < -1 && iterator < head->right.get()->id) {
         return left_rot<Element>(head);
     }
 
     // LR
-    if (b > 1 && element_tree->id > head->left.get()->id)
+    if (b > 1 && iterator > head->left.get()->id)
     {
         head->left = shared_ptr<tree<Element>>(left_rot<Element>(head->left.get()));
         return right_rot<Element>(head);
     }
 
     // RL
-    if (b < -1 && element_tree->id <  head->right.get()->id)
+    if (b < -1 && iterator <  head->right.get()->id)
     {
         head->right = shared_ptr<tree<Element>>(right_rot<Element>(head->right.get()));
         return left_rot<Element>(head);
@@ -282,6 +339,7 @@ static int getMax(int a, int b){
         return a;
     return b;
 }
+
 
 
 #endif //DS_HW1_TREE_H
