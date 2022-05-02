@@ -308,7 +308,7 @@ template<class Element>
 //not sure if it cover case of inserting element that will be head
 tree<Element>* addElementRecursively(tree<Element>* head,tree<Element>* element_tree,int iterator,bool is_salary, StatusType* status)
 {
-    if(head== nullptr){
+    if(head == nullptr){
         return element_tree;
     }
 
