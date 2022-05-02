@@ -6,10 +6,9 @@
 #define DS_HW1_EMPLOYEE_H
 
 #include "Company.h"
-#include "tree.h"
+
 
 using std::shared_ptr;
-
 class Company;
 
 class Employee {
@@ -20,6 +19,7 @@ public:
     int grade;
 
     Employee(int id,Company *company, int salary, int grade);
+
 
     ~Employee() = default;
 };
