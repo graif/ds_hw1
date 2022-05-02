@@ -15,16 +15,16 @@ class Employee;
 class Company {
 
 public:
-    int employee_count;
-    Employee *highest_earner_employee;
     int value;
+    int id;
+    int employee_count;
+    int salary; //garbage value
+    Employee *highest_earner_employee;
     shared_ptr<tree<Employee>> employees_pointers;
     shared_ptr<tree<Employee>> employees_pointers_by_salary;
-    int salary; //garbage value
     Company(int value, int company_id);
     ~Company() = default;
 
-    int id;
 };
 
 #endif //DS_HW1_COMPANY_H

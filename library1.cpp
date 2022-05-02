@@ -439,8 +439,8 @@ StatusType GetAllEmployeesBySalary(void *DS, int CompanyID, int **Employees, int
 
         tree<Company>* c; // used to avoid calling it when not necessary:
         if(CompanyID > 0) c = findById(((DataStrcture *) DS)->company_head.get(), CompanyID);
-
-        if(CompanyID < 0 && ((DataStrcture*)DS)->employee_head == nullptr || CompanyID > 0 && c == nullptr) {
+        //make sure that parentheses are right//
+        if(((CompanyID < 0 )&&( ((DataStrcture*)DS)->employee_head == nullptr)) || (CompanyID > 0 && c == nullptr)) {
             return FAILURE;
         }
 
@@ -561,5 +561,3 @@ void Quit(void **DS){
 
 
 }
-
-
