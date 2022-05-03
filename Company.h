@@ -20,8 +20,8 @@ public:
     int employee_count;
     int salary; //garbage value
     Employee *highest_earner_employee;
-    shared_ptr<tree<Employee>> employees_pointers;
-    shared_ptr<tree<Employee>> employees_pointers_by_salary;
+    tree<Employee>* employees_pointers;
+    tree<Employee>* employees_pointers_by_salary;
     Company(int value, int company_id);
     ~Company() = default;
 

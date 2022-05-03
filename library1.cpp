@@ -3,12 +3,11 @@
 //
 
 #include <memory>
+#include <iostream>
 #include "library1.h"
 #include "Company.h"
 #include "Employee.h"
 #include "tree.h"
-
-using std::shared_ptr;
 
 class DataStrcture {
 public:
@@ -17,10 +16,10 @@ public:
     ~DataStrcture() = default;
 
     int employee_count;
-    shared_ptr<tree<Company>> company_head;
-    shared_ptr<tree<Employee>> employee_head;
+    tree<Company>* company_head;
+    tree<Employee>* employee_head;
     Employee *highest_earner_employee;
-    shared_ptr<tree<Employee>> employees_pointers_by_salary;
+    tree<Employee>* employees_pointers_by_salary;
 };
 
 
@@ -53,7 +52,7 @@ StatusType AddCompany(void *DS, int CompanyID, int Value) {
 
         c = new Company(Value,CompanyID);
         if(((DataStrcture*)DS)->company_head == nullptr) {
-            ((DataStrcture*)DS)->company_head = shared_ptr<tree<Company>>(new tree<Company>(CompanyID,c));
+            ((DataStrcture*)DS)->company_head = new tree<Company>(CompanyID,c);
         }
         else {
             StatusType status = FAILURE;
@@ -62,7 +61,7 @@ StatusType AddCompany(void *DS, int CompanyID, int Value) {
                 return status;
             }
             if(((DataStrcture *) DS)->company_head->id != temp->id) {
-                ((DataStrcture *) DS)->company_head = std::shared_ptr<tree<Company>>(temp); //valgrind segfault cause
+                ((DataStrcture *) DS)->company_head = temp; //valgrind segfault cause
                 //((DataStrcture *) DS)->company_head.get() = temp;
             }
         }
@@ -74,26 +73,115 @@ StatusType AddCompany(void *DS, int CompanyID, int Value) {
     }
 }
 
-void UpdateHighestEarner(DataStrcture *DS, Employee *e) {
+/*void UpdateHighestEarner(DataStrcture *DS, Employee *e) {
     if(DS == nullptr || e == nullptr) return;
     // if no highest earner currently exists
     // or if current highest earner, earns less than our employee
     // or if he earns exactly the same as our employee
     // but also has a higher employee ID
-    if (DS->highest_earner_employee == nullptr || DS->highest_earner_employee->salary <= e->salary ||
+    if (DS->highest_earner_employee == nullptr || DS->highest_earner_employee->salary < e->salary ||
         (DS->highest_earner_employee->salary == e->salary &&
          DS->highest_earner_employee->id > e->id)) {
         DS->highest_earner_employee = e;
     }
-}
-
+}*/
+/**
 void UpdateCompanyHighestEarner(Company *c, Employee *e) {
     if(c == nullptr || e == nullptr) return;
     // same as above but for the highest earner for the specific company
-    /*if (c->highest_earner_employee == nullptr || c->highest_earner_employee->salary <= e->salary ||
+    if (c->highest_earner_employee == nullptr || c->highest_earner_employee->salary < e->salary ||
         (c->highest_earner_employee->salary == e->salary && c->highest_earner_employee->id > e->id)) {
         c->highest_earner_employee = e;
-    }*/ // valgrind invalid read of size 8 (pointer)
+    } // valgrind invalid read of size 8 (pointer)
+}
+**/
+Employee * UpdateHighestEarner(tree<Employee> *c) {
+    if(c==nullptr)
+        return nullptr;
+
+    while(c->right){
+        c = c->right;
+    }
+    return c->element;
+}
+
+StatusType AddEmployee_C(void *DS, int EmployeeID, Company* c, int Salary, int Grade) {
+    if ((DS == nullptr) || (EmployeeID <= 0) || (Salary <= 0) || (Grade < 0)) {
+        return INVALID_INPUT;
+    }
+
+    DataStrcture* DSS = (DataStrcture*)DS;
+    if(((DataStrcture*)DS)->company_head == nullptr) return FAILURE;
+    if (c == nullptr) return FAILURE; // company doesn't exist, nowhere to add employee
+
+    try {
+        Employee* e = new Employee(EmployeeID, c, Salary, Grade);
+        if (((DataStrcture *) DS)->employee_head == nullptr) {
+            ((DataStrcture *) DS)->employee_head = new tree<Employee>(EmployeeID, e);
+        }
+        else {
+            StatusType status = FAILURE;
+            tree<Employee>* temp = addElement(DSS->employee_head, e,EmployeeID,false,&status);
+            if(status != SUCCESS) return status;
+            ((DataStrcture *) DS)->employee_head = temp;
+        }
+
+        /*** add the employee's pointer to the pointers_employees tree: **/
+        /* if employees pointers is empty, initialize one */
+        tree<Employee>* t = findById(((DataStrcture*)DS)->employee_head,EmployeeID);
+
+        if(t == nullptr) {
+            std::cout << "t is null for some stupid reason (EmployeeID: " << EmployeeID << ")" << std::endl;
+            return FAILURE;
+        }
+
+        if (c->employees_pointers == nullptr) {
+            tree<Employee>* ba = new tree<Employee>(EmployeeID, t->element);
+            c->employees_pointers = ba;
+        }
+        else {
+            StatusType status = FAILURE;
+            tree<Employee> * temp = addElement(c->employees_pointers,t->element, EmployeeID, false, &status);
+            if(status != SUCCESS) return status;
+            c->employees_pointers = temp;
+        }
+
+        /*** add the employee's pointer by SALARY: **/
+        if (c->employees_pointers_by_salary == nullptr) {
+            tree<Employee>* ba2 = new tree<Employee>(Salary, t->element);
+            c->employees_pointers_by_salary = ba2;
+        }
+        else {
+            StatusType status = FAILURE;
+            tree<Employee> * temp = addElement(c->employees_pointers_by_salary,t->element, Salary,true, &status);
+            if(status != SUCCESS) {
+                return status;
+            }
+            c->employees_pointers_by_salary = temp;
+        }
+
+        /*** add the employee's pointer to the general employee by SALARY tree ***/
+        if(((DataStrcture*)DS)->employees_pointers_by_salary == nullptr) {
+            tree<Employee>* ba3 = new tree<Employee>(Salary, t->element);
+            ((DataStrcture*)DS)->employees_pointers_by_salary = ba3;
+        }
+        else {
+            StatusType status = FAILURE;
+            tree<Employee> * temp = addElement(((DataStrcture*)DS)->employees_pointers_by_salary,t->element, Salary,true, &status);
+            if(status != SUCCESS) return status;
+            ((DataStrcture*)DS)->employees_pointers_by_salary = temp;
+        }
+        ((DataStrcture *)DS)->highest_earner_employee = UpdateHighestEarner(((DataStrcture *)DS)->employees_pointers_by_salary);
+        c->highest_earner_employee = UpdateHighestEarner(c->employees_pointers_by_salary);
+
+        (((DataStrcture*)DS)->employee_count)++;
+        (c->employee_count)++; // raise the company's employee count by 1
+        return SUCCESS;
+    }
+    catch (std::bad_alloc &) {
+        return ALLOCATION_ERROR;
+        /// remember to delete previous steps if failed mid-way
+    }
 }
 
 StatusType AddEmployee(void *DS, int EmployeeID, int CompanyID, int Salary, int Grade) {
@@ -101,63 +189,73 @@ StatusType AddEmployee(void *DS, int EmployeeID, int CompanyID, int Salary, int 
         return INVALID_INPUT;
     }
 
+    DataStrcture* DSS = (DataStrcture*)DS;
     if(((DataStrcture*)DS)->company_head == nullptr) return FAILURE;
-    tree<Company>* c = findById(((DataStrcture *) DS)->company_head.get(), CompanyID);
+    tree<Company>* c = findById(((DataStrcture *) DS)->company_head, CompanyID);
     if (c == nullptr) return FAILURE; // company doesn't exist, nowhere to add employee
 
     try {
-        Employee* e = new Employee(EmployeeID, c->element.get(), Salary, Grade);
+        Employee* e = new Employee(EmployeeID, c->element, Salary, Grade);
         if (((DataStrcture *) DS)->employee_head == nullptr) {
-            ((DataStrcture *) DS)->employee_head = shared_ptr<tree<Employee>>(new tree<Employee>(EmployeeID, e));
+            ((DataStrcture *) DS)->employee_head = new tree<Employee>(EmployeeID, e);
         }
         else {
             StatusType status = FAILURE;
-            tree<Employee>* temp = addElement(((DataStrcture *) DS)->employee_head,e,e->id,false,&status);
+            tree<Employee>* temp = addElement(DSS->employee_head, e,EmployeeID,false,&status);
             if(status != SUCCESS) return status;
-            ((DataStrcture *) DS)->employee_head = shared_ptr<tree<Employee>>(temp);;
+            ((DataStrcture *) DS)->employee_head = temp;
         }
-        UpdateHighestEarner((DataStrcture *)DS, e);
-        UpdateCompanyHighestEarner(c->element.get(), e); // valgrind test
-        (c->element->employee_count)++; // raise the company's employee count by 1
 
         /*** add the employee's pointer to the pointers_employees tree: **/
         /* if employees pointers is empty, initialize one */
-        shared_ptr<tree<Employee>> t = shared_ptr<tree<Employee>>(findById(((DataStrcture*)DS)->employee_head.get(),EmployeeID));
+        tree<Employee>* t = findById(((DataStrcture*)DS)->employee_head,EmployeeID);
+
+        if(t == nullptr) {
+            std::cout << "t is null for some stupid reason (EmployeeID: " << EmployeeID << ")" << std::endl;
+            return FAILURE;
+        }
+
         if (c->element->employees_pointers == nullptr) {
-            tree<Employee>* ba = new tree<Employee>(EmployeeID, t->element.get());
-            c->element->employees_pointers = shared_ptr<tree<Employee>>(ba);
+            tree<Employee>* ba = new tree<Employee>(EmployeeID, t->element);
+            c->element->employees_pointers = ba;
         }
         else {
             StatusType status = FAILURE;
-            tree<Employee> * temp = addElement(c->element->employees_pointers,t->element.get(), EmployeeID, false, &status);
+            tree<Employee> * temp = addElement(c->element->employees_pointers,t->element, EmployeeID, false, &status);
             if(status != SUCCESS) return status;
-            c->element->employees_pointers = std::shared_ptr<tree<Employee>>(temp);
+            c->element->employees_pointers = temp;
         }
 
         /*** add the employee's pointer by SALARY: **/
         if (c->element->employees_pointers_by_salary == nullptr) {
-            tree<Employee>* ba = new tree<Employee>(Salary, t->element.get());
-            c->element->employees_pointers_by_salary = shared_ptr<tree<Employee>>(ba);
+            tree<Employee>* ba2 = new tree<Employee>(Salary, t->element);
+            c->element->employees_pointers_by_salary = ba2;
         }
         else {
             StatusType status = FAILURE;
-            tree<Employee> * temp = addElement(c->element->employees_pointers_by_salary,t->element.get(), Salary,true, &status);
-            if(status != SUCCESS) return status;
-            c->element->employees_pointers_by_salary = std::shared_ptr<tree<Employee>>(temp);
+            tree<Employee> * temp = addElement(c->element->employees_pointers_by_salary,t->element, Salary,true, &status);
+            if(status != SUCCESS) {
+                return status;
+            }
+            c->element->employees_pointers_by_salary = temp;
         }
 
         /*** add the employee's pointer to the general employee by SALARY tree ***/
         if(((DataStrcture*)DS)->employees_pointers_by_salary == nullptr) {
-            tree<Employee>* ba = new tree<Employee>(Salary, t->element.get());
-            ((DataStrcture*)DS)->employees_pointers_by_salary = shared_ptr<tree<Employee>>(ba);
+            tree<Employee>* ba3 = new tree<Employee>(Salary, t->element);
+            ((DataStrcture*)DS)->employees_pointers_by_salary = ba3;
         }
         else {
             StatusType status = FAILURE;
-            tree<Employee> * temp = addElement(((DataStrcture*)DS)->employees_pointers_by_salary,t->element.get(), Salary,true, &status);
+            tree<Employee> * temp = addElement(((DataStrcture*)DS)->employees_pointers_by_salary,t->element, Salary,true, &status);
             if(status != SUCCESS) return status;
-            ((DataStrcture*)DS)->employees_pointers_by_salary = std::shared_ptr<tree<Employee>>(temp);
+            ((DataStrcture*)DS)->employees_pointers_by_salary = temp;
         }
+        ((DataStrcture *)DS)->highest_earner_employee = UpdateHighestEarner(((DataStrcture *)DS)->employees_pointers_by_salary);
+        c->element->highest_earner_employee = UpdateHighestEarner(c->element->employees_pointers_by_salary);
+
         (((DataStrcture*)DS)->employee_count)++;
+        (c->element->employee_count)++; // raise the company's employee count by 1
         return SUCCESS;
     }
     catch (std::bad_alloc &) {
@@ -171,15 +269,15 @@ StatusType RemoveCompany(void *DS, int CompanyID){
         if (CompanyID <= 0 || DS == nullptr) {
             return INVALID_INPUT;
         }
-        tree<Company> *c = findById(((DataStrcture *) DS)->company_head.get(), CompanyID);
+        tree<Company> *c = findById(((DataStrcture *) DS)->company_head, CompanyID);
         if (c == nullptr || c->element->employees_pointers == nullptr)
             return FAILURE; // company doesn't exist, nowhere to add employee
         StatusType status = FAILURE;
-        tree<Company> *temp = ((DataStrcture *) DS)->company_head->eraseElement(c->element.get(),false, &status);
+        tree<Company> *temp = ((DataStrcture *) DS)->company_head->eraseElement(c->element,false, &status);
         if (status != SUCCESS) {
             return status;
         }
-        ((DataStrcture *) DS)->company_head = std::shared_ptr<tree<Company>>(temp);
+        ((DataStrcture *) DS)->company_head = temp;
 
         return SUCCESS;
     }
@@ -197,62 +295,68 @@ StatusType RemoveEmployee(void *DS, int EmployeeID){
             return INVALID_INPUT;
         }
 
-        tree<Employee> *e = findById(((DataStrcture *) DS)->employee_head.get(), EmployeeID);
+        tree<Employee> *e = findById(((DataStrcture *) DS)->employee_head, EmployeeID);
         if (e == nullptr||e->element== nullptr ) return FAILURE; // company doesn't exist, nowhere to add employee
         Company *c = e->element->company;
         StatusType status = FAILURE;
-
+        Employee* temp_e = new Employee(EmployeeID, c, e->element->salary,e->element->grade);
         //delete emp pntr by salary DS
-        tree<Employee> *temp = ((DataStrcture *) DS)->employees_pointers_by_salary->eraseElement(e->element.get(), true,&status);
+        tree<Employee> *temp = ((DataStrcture *) DS)->employees_pointers_by_salary->eraseElement(temp_e, true,&status);
         if (status != SUCCESS) {
+            delete temp_e;
             return status;
         }
-        ((DataStrcture *) DS)->employees_pointers_by_salary = shared_ptr<tree<Employee>>(temp);
+        ((DataStrcture *) DS)->employees_pointers_by_salary = temp;
 
         //delete emp pntr Company
-        temp = c->employees_pointers->eraseElement(e->element.get(), false,&status);
+        temp = c->employees_pointers->eraseElement(temp_e, false,&status);
 
         if (status != SUCCESS) {
+            delete temp_e;
             return status;
         }
-        c->employees_pointers = shared_ptr<tree<Employee>>(temp);
+        c->employees_pointers = temp;
 
        //delete emp pntr by salary Company
-        temp = c->employees_pointers_by_salary->eraseElement(e->element.get(), true,&status);
+        temp = c->employees_pointers_by_salary->eraseElement(temp_e, true,&status);
 
         if (status != SUCCESS) {
+            delete temp_e;
             return status;
         }
-        c->employees_pointers_by_salary = shared_ptr<tree<Employee>>(temp);
+        c->employees_pointers_by_salary = temp;
 
         //delete emp pntr DS
-        temp = ((DataStrcture *) DS)->employee_head->eraseElement(e->element.get(),false,&status);
+        temp = ((DataStrcture *) DS)->employee_head->eraseElement(temp_e,false,&status);
         if (status != SUCCESS) {
+            delete temp_e;
             return status;
         }
-        ((DataStrcture *) DS)->employee_head = shared_ptr<tree<Employee>>(temp);
+        ((DataStrcture *) DS)->employee_head = temp;
 
         //update counters
         c->employee_count--;
         ((DataStrcture *) DS)->employee_count--;
 
         //update highest earner
-        temp=((DataStrcture *) DS)->employees_pointers_by_salary.get();
+        /*temp=((DataStrcture *) DS)->employees_pointers_by_salary;
         while(temp->right) {
             if(!temp->right) break;
-            temp=temp->right.get();
+            temp=temp->right;
         }
-        ((DataStrcture *) DS)->highest_earner_employee=temp->element.get();
+        ((DataStrcture *) DS)->highest_earner_employee=temp->element;
 
-        temp=c->employees_pointers_by_salary.get();
+        temp=c->employees_pointers_by_salary;
         while(temp->right) {
             if(!temp->right) break;
-            temp=temp->right.get();
+            temp=temp->right;
         }
-        c->highest_earner_employee = temp->element.get();
+        c->highest_earner_employee = temp->element;*/
+        ((DataStrcture *)DS)->highest_earner_employee = UpdateHighestEarner(((DataStrcture *)DS)->employees_pointers_by_salary);
+        c->highest_earner_employee = UpdateHighestEarner(c->employees_pointers_by_salary);
 
+        delete temp_e;
         return SUCCESS;
-
     }
 
     catch (std::bad_alloc &) {
@@ -266,7 +370,7 @@ StatusType GetCompanyInfo(void *DS, int CompanyID, int *Value, int *NumEmployees
     if((DS == nullptr) || (CompanyID <= 0) || (Value == nullptr) || (NumEmployees == nullptr)) {
         return INVALID_INPUT;
     }
-    tree<Company>* c = findById(((DataStrcture *) DS)->company_head.get(), CompanyID);
+    tree<Company>* c = findById(((DataStrcture *) DS)->company_head, CompanyID);
     if (c == nullptr) return FAILURE; // company doesn't exist
 
     *Value = c->element->value;
@@ -279,7 +383,7 @@ StatusType GetEmployeeInfo(void *DS, int EmployeeID, int *EmployerID, int *Salar
     if((DS == nullptr) || (EmployeeID <= 0) || (Salary == nullptr) || (Grade == nullptr)) {
         return INVALID_INPUT;
     }
-    tree<Employee>* e = findById(((DataStrcture *) DS)->employee_head.get(), EmployeeID);
+    tree<Employee>* e = findById(((DataStrcture *) DS)->employee_head, EmployeeID);
     if (e == nullptr) return FAILURE; // employee doesn't exist
 
     *EmployerID = e->element->company->id;
@@ -293,7 +397,7 @@ StatusType IncreaseCompanyValue(void *DS, int CompanyID, int ValueIncrease) {
     if((DS == nullptr) || (CompanyID <= 0) || (ValueIncrease <= 0)) {
         return INVALID_INPUT;
     }
-    tree<Company>* c = findById(((DataStrcture *) DS)->company_head.get(), CompanyID);
+    tree<Company>* c = findById(((DataStrcture *) DS)->company_head, CompanyID);
     if (c == nullptr) return FAILURE; // company doesn't exist
 
     c->element->value += ValueIncrease;
@@ -304,13 +408,19 @@ StatusType PromoteEmployee(void *DS, int EmployeeID, int SalaryIncrease, int Bum
     if((DS == nullptr) || (EmployeeID <= 0) || (SalaryIncrease <= 0)) {
         return INVALID_INPUT;
     }
-    tree<Employee>* e = findById(((DataStrcture *) DS)->employee_head.get(), EmployeeID);
+    tree<Employee>* e = findById(((DataStrcture *) DS)->employee_head, EmployeeID);
     if (e == nullptr) return FAILURE; // employee doesn't exist
 
-    e->element->salary += SalaryIncrease;
+    int temp_salary = e->element->salary + SalaryIncrease;
+    int temp_grade = e->element->grade;
     if(BumpGrade > 0) {
-        e->element->grade++;
+        temp_grade++;
     }
+
+    Company* c = e->element->company;
+    RemoveEmployee(DS, EmployeeID);
+    AddEmployee_C(DS,EmployeeID,c,temp_salary,temp_grade);
+
     return SUCCESS;
 }
 
@@ -318,8 +428,8 @@ StatusType HireEmployee(void *DS, int EmployeeID, int NewCompanyID) {
     if((DS == nullptr) || (EmployeeID <= 0) || (NewCompanyID <= 0)) {
         return INVALID_INPUT;
     }
-    tree<Employee>* e = findById(((DataStrcture *) DS)->employee_head.get(), EmployeeID);
-    tree<Company>* c = findById(((DataStrcture *) DS)->company_head.get(), NewCompanyID);
+    tree<Employee>* e = findById(((DataStrcture *) DS)->employee_head, EmployeeID);
+    tree<Company>* c = findById(((DataStrcture *) DS)->company_head, NewCompanyID);
     if (c == nullptr || e == nullptr || e->element->company->id == NewCompanyID) return FAILURE;
 
     // delete employee from previous company's pointers tree:
@@ -353,9 +463,9 @@ StatusType AcquireCompany(void *DS, int AcquirerID, int TargetID, double Factor)
             return INVALID_INPUT;
         }
 
-        tree<Company>* Acquirer = findById(((DataStrcture *) DS)->company_head.get(), AcquirerID);
-        tree<Company>* Target = findById(((DataStrcture *) DS)->company_head.get(), TargetID);
-        if(Acquirer == nullptr || Target == nullptr || Acquirer->element->value >= (10*Target->element->value)) {
+        tree<Company>* Acquirer = findById(((DataStrcture *) DS)->company_head, AcquirerID);
+        tree<Company>* Target = findById(((DataStrcture *) DS)->company_head, TargetID);
+        if(Acquirer == nullptr || Target == nullptr || Acquirer->element->value < (10*Target->element->value)) {
             return FAILURE;
         }
 
@@ -374,15 +484,15 @@ StatusType AcquireCompany(void *DS, int AcquirerID, int TargetID, double Factor)
 
         StatusType status=FAILURE;
         tree<Employee>* merged_emp_ptr= CombineTree<Employee>
-                (Acquirer->element->employees_pointers.get(),Target->element->employees_pointers.get(),
+                (Acquirer->element->employees_pointers,Target->element->employees_pointers,
                  Acquirer->element->employee_count,Target->element->employee_count,&status);
-        Acquirer->element->employees_pointers=std::shared_ptr<tree<Employee>>(merged_emp_ptr);
+        Acquirer->element->employees_pointers = merged_emp_ptr;
 
         tree<Employee>* merged_emp_salary= CombineTree<Employee>
-                (Acquirer->element->employees_pointers_by_salary.get(),Target->element->employees_pointers_by_salary.get(),
+                (Acquirer->element->employees_pointers_by_salary,Target->element->employees_pointers_by_salary,
                  Acquirer->element->employee_count,Target->element->employee_count,&status);
 
-        Acquirer->element->employees_pointers_by_salary=std::shared_ptr<tree<Employee>>(merged_emp_salary);
+        Acquirer->element->employees_pointers_by_salary = merged_emp_salary;
 
         return status;
     }
@@ -397,8 +507,10 @@ StatusType GetHighestEarner(void *DS, int CompanyID, int *EmployeeID) {
         return INVALID_INPUT;
     }
 
+    DataStrcture* DSS = (DataStrcture*)DS;
+
     tree<Company>* c; // used to avoid calling it when not necessary:
-    if(CompanyID > 0) c = findById(((DataStrcture *) DS)->company_head.get(), CompanyID);
+    if(CompanyID > 0) c = findById(((DataStrcture *) DS)->company_head, CompanyID);
 
     if((CompanyID < 0 && ((DataStrcture*)DS)->employee_head == nullptr) ||
             (CompanyID > 0 && c == nullptr) ||
@@ -418,24 +530,18 @@ StatusType GetHighestEarner(void *DS, int CompanyID, int *EmployeeID) {
 
 StatusType GetAllEmployeesBySalary_helper(tree<Employee>* e, int **Employees, int *NumOfEmployees) {
     //if(*counter >= NumOfCompanies) return SUCCESS;
-    if(e->left == nullptr) {
-        // add e
-        *(Employees[*NumOfEmployees]) = e->element->id;
-        (*NumOfEmployees)++;
-        return SUCCESS; // smallest node
-    }
+    if(e== nullptr)
+        return SUCCESS;
 
-    StatusType result = GetAllEmployeesBySalary_helper(e->left.get(), Employees, NumOfEmployees);
+    StatusType result = GetAllEmployeesBySalary_helper(e->right, Employees, NumOfEmployees);
     if(result != SUCCESS) return result;
 
-    // add e
-    *(Employees[*NumOfEmployees]) = e->element->id;
+    (*(Employees))[*NumOfEmployees] = e->element->id;
     (*NumOfEmployees)++;
 
-    if(e->right != nullptr) {
-        result = GetAllEmployeesBySalary_helper(e->right.get(), Employees, NumOfEmployees);
+    result = GetAllEmployeesBySalary_helper(e->left, Employees, NumOfEmployees);
         if(result != SUCCESS) return result;
-    }
+
     return SUCCESS;
 }
 
@@ -444,23 +550,35 @@ StatusType GetAllEmployeesBySalary(void *DS, int CompanyID, int **Employees, int
         if ((DS == nullptr) || (Employees == nullptr) || (NumOfEmployees == nullptr) || (CompanyID == 0)) {
             return INVALID_INPUT;
         }
-        *Employees = new int[*NumOfEmployees]; // this is supposed to be deleted by 'them'
 
         tree<Company>* c; // used to avoid calling it when not necessary:
-        if(CompanyID > 0) c = findById(((DataStrcture *) DS)->company_head.get(), CompanyID);
-        if((CompanyID < 0) && ((((DataStrcture*)DS)->employee_head == nullptr) || (CompanyID > 0 && c == nullptr))) {
+        if(CompanyID > 0) c = findById(((DataStrcture *) DS)->company_head, CompanyID);
+        if(((CompanyID < 0) && (((DataStrcture*)DS)->employee_head == nullptr)) || ((CompanyID > 0) && (c == nullptr)) || ((CompanyID > 0) && (c->element->employees_pointers == nullptr))) {
             return FAILURE;
         }
 
+        if(CompanyID > 0) {
+            *NumOfEmployees = c->element->employee_count;
+        }
+        else { // we check if 0 earlier
+            *NumOfEmployees = ((DataStrcture*)DS)->employee_count;
+        }
+
+        *Employees = (int*)malloc(sizeof(int)*(*NumOfEmployees)); // this is supposed to be deleted by 'them'
+
+        int index = 0;
         if(CompanyID < 0) {
             // get an ordered list of employees by salary from all employees
-            StatusType result = GetAllEmployeesBySalary_helper(((DataStrcture*)DS)->employees_pointers_by_salary.get(), Employees, NumOfEmployees);
+            StatusType result = GetAllEmployeesBySalary_helper(((DataStrcture*)DS)->employees_pointers_by_salary, Employees, &index);
             if(result != SUCCESS) return result;
         }
         else {
             // get an ordered list of employees by salary from all employees in the company
-            StatusType result = GetAllEmployeesBySalary_helper(c->element->employees_pointers_by_salary.get(), Employees, NumOfEmployees);
+            StatusType result = GetAllEmployeesBySalary_helper(c->element->employees_pointers_by_salary, Employees, &index);
             if(result != SUCCESS) return result;
+        }
+        if(index + 1 != *NumOfEmployees) {
+            //std::cout << "index: " << index + 1 << " NumOfEmployees: " << *NumOfEmployees << std::endl;
         }
     }
     catch (std::bad_alloc&) {
@@ -473,20 +591,20 @@ StatusType GetHighestEarnerInEachCompany_helper(void *DS, int NumOfCompanies, in
     if(*counter >= NumOfCompanies) return SUCCESS;
     if(c->left == nullptr) {
         // add c
-        companies[*counter] = c->element.get();
+        companies[*counter] = c->element;
         (*counter)++;
         return SUCCESS; // smallest node
     }
 
-    StatusType result = GetHighestEarnerInEachCompany_helper(DS, NumOfCompanies, Employees, c->left.get(), companies, counter);
+    StatusType result = GetHighestEarnerInEachCompany_helper(DS, NumOfCompanies, Employees, c->left, companies, counter);
     if(result != SUCCESS) return result;
 
     // add c
-    companies[*counter] = c->element.get();
+    companies[*counter] = c->element;
     (*counter)++;
 
     if(c->right != nullptr) {
-        result = GetHighestEarnerInEachCompany_helper(DS, NumOfCompanies, Employees, c->right.get(), companies, counter);
+        result = GetHighestEarnerInEachCompany_helper(DS, NumOfCompanies, Employees, c->right, companies, counter);
         if(result != SUCCESS) return result;
     }
     return SUCCESS; //check which status is required here
@@ -500,7 +618,7 @@ StatusType GetHighestEarnerInEachCompany(void *DS, int NumOfCompanies, int **Emp
         Company** companies = new Company*[NumOfCompanies];
         int counter = 0;
 
-        tree<Company>* c = ((DataStrcture*)DS)->company_head.get();
+        tree<Company>* c = ((DataStrcture*)DS)->company_head;
         StatusType result = GetHighestEarnerInEachCompany_helper(DS, NumOfCompanies, Employees, c, companies, &counter);
         if(result != SUCCESS) return result;
         if(counter != NumOfCompanies) return FAILURE;
@@ -525,7 +643,7 @@ StatusType GetNumEmployeesMatching_helper(tree<Employee>* e, int MinEmployeeID, 
         return SUCCESS; // smallest node
     }
 
-    StatusType result = GetNumEmployeesMatching_helper(e->left.get(), MinEmployeeID, MaxEmployeeId, TotalNumOfEmployees);
+    StatusType result = GetNumEmployeesMatching_helper(e->left, MinEmployeeID, MaxEmployeeId, TotalNumOfEmployees);
     if(result != SUCCESS) return result;
 
     // add e
@@ -533,7 +651,7 @@ StatusType GetNumEmployeesMatching_helper(tree<Employee>* e, int MinEmployeeID, 
         (*TotalNumOfEmployees)++;
 
     if(e->right != nullptr && e->right->id <= MaxEmployeeId) {
-        result = GetNumEmployeesMatching_helper(e->right.get(), MinEmployeeID, MaxEmployeeId, TotalNumOfEmployees);
+        result = GetNumEmployeesMatching_helper(e->right, MinEmployeeID, MaxEmployeeId, TotalNumOfEmployees);
         if(result != SUCCESS) return result;
     }
     return SUCCESS; //check which status is required here
@@ -547,7 +665,7 @@ StatusType GetNumEmployeesMatching(void *DS, int CompanyID, int MinEmployeeID, i
     }
 
     tree<Company>* c; // used to avoid calling it when not necessary:
-    if(CompanyID > 0) c = findById(((DataStrcture *) DS)->company_head.get(), CompanyID);
+    if(CompanyID > 0) c = findById(((DataStrcture *) DS)->company_head, CompanyID);
 
     if((CompanyID < 0 && ((DataStrcture*)DS)->employee_head == nullptr) ||
        (CompanyID > 0 && c == nullptr) ||
@@ -556,18 +674,15 @@ StatusType GetNumEmployeesMatching(void *DS, int CompanyID, int MinEmployeeID, i
     }
 
     if(CompanyID < 0) {
-        StatusType result = GetNumEmployeesMatching_helper(((DataStrcture*)DS)->employee_head.get(), MinEmployeeID, MaxEmployeeId, TotalNumOfEmployees);
+        StatusType result = GetNumEmployeesMatching_helper(((DataStrcture*)DS)->employee_head, MinEmployeeID, MaxEmployeeId, TotalNumOfEmployees);
         if(result != SUCCESS) return result;
     }
     else {
-        StatusType result = GetNumEmployeesMatching_helper(c->element->employees_pointers.get(), MinEmployeeID, MaxEmployeeId, TotalNumOfEmployees);
+        StatusType result = GetNumEmployeesMatching_helper(c->element->employees_pointers, MinEmployeeID, MaxEmployeeId, TotalNumOfEmployees);
         if(result != SUCCESS) return result;
     }
     return SUCCESS;
 }
 
 void Quit(void **DS){
-
-
-
 }

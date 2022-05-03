@@ -8,7 +8,6 @@
 #include "Company.h"
 
 
-using std::shared_ptr;
 class Company;
 
 class Employee {

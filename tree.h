@@ -9,25 +9,24 @@
 #include "library1.h"
 #include <algorithm>
 
-
-using std::shared_ptr;
-
 class Company;
 template<class Element>
 class tree {
 public:
     int id; //iterator
     int height;
-    shared_ptr<Element> element;
-    shared_ptr<tree<Element>> left;
-    shared_ptr<tree<Element>> right;
-    tree(int id) : id(id), height(0), element(nullptr), left(nullptr), right(nullptr) {};
-    tree(int id, Element* element) : id(id), height(0), element(shared_ptr<Element>(element)), left(nullptr), right(nullptr) {};
-     ~tree() {
-             clear(this->left);
-             clear(this->right);
-             this->element= nullptr;
-
+    Element* element;
+    tree<Element> * left;
+    tree<Element> * right;
+    tree(int id) : id(id), height(1), element(nullptr), left(nullptr), right(nullptr) {};
+    tree(int id, Element* element) : id(id), height(1), element(element), left(nullptr), right(nullptr) {};
+    ~tree() {
+        if(this->element) {
+            delete element;
+            this->element = nullptr;
+        }
+        this->left = nullptr;
+        this->right = nullptr;
      };
 
      /**
@@ -101,6 +100,7 @@ public:
      * @return
      */
     int getBalance() {
+        if(this == nullptr) return 0;
         return (getHeight(this->left) - getHeight(this->right));
     }
 
@@ -172,12 +172,12 @@ tree<Element> *findMyDaddy(tree<Element> *head, int id) {
             if (head->left == nullptr) {
                 return head;
             }
-            return findMyDaddy(head->left.get(), id);
+            return findMyDaddy(head->left, id);
         } else {
             if (head->right == nullptr) {
                 return head;
             }
-            return findMyDaddy(head->right.get(), id);
+            return findMyDaddy(head->right, id);
         }
     }
 }
@@ -197,10 +197,10 @@ tree<Element> *findById(tree<Element> *head, int id) {
     }
     if (head->id == id) {
         return head;
-    } else if (head->id > id && head->right != nullptr) {
-        return findById(head->right.get(), id);
-    } else if (head->id < id && head->left != nullptr) {
-        return findById(head->left.get(), id);
+    } else if (head->id < id && head->right != nullptr) {
+        return findById(head->right, id);
+    } else if (head->id > id && head->left != nullptr) {
+        return findById(head->left, id);
     }
     return nullptr;
 }
@@ -214,10 +214,11 @@ tree<Element>* left_rot(tree<Element> * head) {
     head->right=temp2;
 
     //head->height = getMax(getHeight(head->left),getHeight(head->right))+1;
-    //temp1->height=getMax(getHeight(temp1->left),getHeight(temp1->right))+1;
+    //temp1->height = getMax(getHeight(temp1->left),getHeight(temp1->right))+1;
     int a = getHeight(head->left);
     int b = getHeight(head->right);
     head->height = (a > b ? a : b) + 1;
+
     a = getHeight(temp1->left);
     b = getHeight(temp1->right);
     temp1->height = (a > b ? a : b) + 1;
@@ -268,7 +269,7 @@ tree<Element>* addElementRecursively(tree<Element>* head,tree<Element>* element_
 
         if((!is_salary)){
             *status = FAILURE; // already exists in tree
-            return element_tree;
+            return head; // possibly element_tree
         }
         else if(head->element.get()->id > element_tree->element.get()->id){
             head->right = shared_ptr<tree<Element>>(addElementRecursively(head->right.get(),element_tree,iterator,is_salary, status));
@@ -329,7 +330,7 @@ tree<Element>* addElementRecursively(tree<Element>* head,tree<Element>* element_
 template <class Element>
 tree<Element> * deleteElementRecursively( tree<Element> * head,Element* e,bool is_salary,StatusType* status) {
 
-    if (head == nullptr) {
+    if (head == nullptr || head->element == nullptr || e == nullptr) {
         *status = FAILURE; // already exists in tree
         return head;
     }
@@ -350,7 +351,7 @@ tree<Element> * deleteElementRecursively( tree<Element> * head,Element* e,bool i
             head->left = shared_ptr<tree<Element>>(deleteElementRecursively(head->left.get(), e, is_salary, status));
         }
     }
-        //founded the element to be deleted
+        //found the element to be deleted
     else {
 
         //case of 1/0 child
@@ -469,15 +470,15 @@ void treeToArray(tree<Element>* head, shared_ptr<Element>* dest, int* index){
 template <class Element>
 tree<Element>* CombineTree(tree<Element>* head1,tree<Element>* head2, int size1 , int size2,StatusType* status){
     try {
-        shared_ptr<Element> *tree1 = new shared_ptr<Element>[size1];
-        shared_ptr<Element> *tree2 = new shared_ptr<Element>[size2];
+        Element** tree1 = new Element*[size1];
+        Element** tree2 = new Element*[size2];
         int index = 0;
         treeToArray<Element>(head1, tree1, &index);
         index = 0;
         treeToArray<Element>(head2, tree2, &index);
         index = 0;
 
-        shared_ptr<Element> *merged = new shared_ptr<Element>[size1+size2];
+        Element** merged = new Element*[size1+size2];
 
         int i=0,j=0,k=0;
         while(i<size1&&j<size2){

@@ -157,8 +157,51 @@ static OnFuncPtr OnCmdPtrs[] = {
 int main(int argc, const char**argv) {
     void* ds= Init();
     AddCompany(ds,1, 1);
-    AddCompany(ds,2, 2);
+    AddCompany(ds,2, 20);
     AddCompany(ds,3, 3);
+    AddEmployee(ds,1,2,10,1);
+    AddEmployee(ds,2,2,15,1);
+    AddEmployee(ds,3,2,5,2);
+    AddEmployee(ds,55,2,5,2);
+    AddEmployee(ds,14,2,5,2);
+    AddEmployee(ds,37,2,5,2);
+    AddEmployee(ds,81,2,5,2);
+    AddEmployee(ds,398,2,5,2);
+    AddEmployee(ds,456,2,5,2);
+    AddEmployee(ds,223,2,5,2);
+    AddEmployee(ds,12,2,5,2);
+    AddEmployee(ds,7,2,5,2);
+    AddEmployee(ds,891,2,5,2);
+    AddEmployee(ds,10893,2,5,2);
+    AddEmployee(ds,29,2,5,2);
+    AddEmployee(ds,36,2,5,2);
+    AddEmployee(ds,4098,2,5,2);
+    AddEmployee(ds,167,2,5,2);
+    AddEmployee(ds,189,2,5,2);
+    AddEmployee(ds,124,2,5,2);
+    AddEmployee(ds,17,2,5,2);
+    AddEmployee(ds,983,2,5,2);
+    AddEmployee(ds,3,2,5,2);
+    AddEmployee(ds,56,2,5,2);
+    AddEmployee(ds,149,2,5,2);
+    AddEmployee(ds,5890,2,5,2);
+    AddEmployee(ds,35,2,5,2);
+    AddEmployee(ds,763,2,5,2);
+    AddEmployee(ds,18,2,5,2);
+    int* Employees;
+    int NumOfEmployees;
+    GetAllEmployeesBySalary(ds, 2, &Employees, &NumOfEmployees);
+
+    AddEmployee(ds,30,1,5,2);
+    AddEmployee(ds,76,1,5,2);
+    AddEmployee(ds,20,1,5,2);
+    //AcquireCompany(ds,2,1,1.00);
+
+    int EmployeeID = 0;
+    GetHighestEarner(ds,2,&EmployeeID);
+    //cout << "highest earner: " << EmployeeID << endl;
+
+    RemoveEmployee(ds,5890);
     return 0;
 }
 
