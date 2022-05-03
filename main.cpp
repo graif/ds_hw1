@@ -155,14 +155,10 @@ static OnFuncPtr OnCmdPtrs[] = {
 /***************************************************************************/
 
 int main(int argc, const char**argv) {
-    char buffer[MAX_STRING_INPUT_SIZE];
-
-    // Reading commands
-    while (fgets(buffer, MAX_STRING_INPUT_SIZE, stdin) != NULL) {
-        fflush(stdout);
-        if (parser(buffer) == error)
-            break;
-    };
+    void* ds= Init();
+    AddCompany(ds,1, 1);
+    AddCompany(ds,2, 2);
+    AddCompany(ds,3, 3);
     return 0;
 }
 

@@ -27,7 +27,7 @@ public:
              clear(this->left);
              clear(this->right);
              this->element= nullptr;
-             delete this;
+
      };
 
      /**
@@ -60,8 +60,9 @@ public:
             return this;
         }
         try {
-            tree<Element> *t = new tree(iterator);
-            tree<Element> *T = addElementRecursively(this,t,iterator,is_salary, status);
+            tree<Element> *t = new tree(iterator,e);
+
+            tree<Element>* T = addElementRecursively(this,t,iterator,is_salary, status);
             if(*status != SUCCESS) {
                 delete t;
                 return nullptr;
@@ -206,7 +207,7 @@ tree<Element> *findById(tree<Element> *head, int id) {
 
 /*******************************************   rotate functions   ***********************************************************/
 template <class Element>
-tree<Element>* left_rot(tree<Element>* head){
+tree<Element>* left_rot(tree<Element> * head) {
     shared_ptr<tree<Element>> temp1=head->right;
     shared_ptr<tree<Element>> temp2=temp1->left;
     temp1->left=shared_ptr<tree<Element>>(head);
@@ -225,7 +226,7 @@ tree<Element>* left_rot(tree<Element>* head){
 }
 
 template <class Element>
-tree<Element>* right_rot(tree<Element>* head){
+tree<Element>* right_rot(tree<Element> * head){
     shared_ptr<tree<Element>> temp1=head->left;
     shared_ptr<tree<Element>> temp2=temp1->right;
     temp1->right=shared_ptr<tree<Element>>(head);
@@ -402,24 +403,24 @@ tree<Element> * deleteElementRecursively( tree<Element> * head,Element* e,bool i
     int b = head->getBalance();
 
     // LL
-    if (b > 1 && head->left.get()->getBalance()>=0) {
+    if (head->left!= nullptr && b > 1 && head->left.get()->getBalance()>=0) {
         return right_rot<Element>(head);
     }
 
     // RR
-    if (b < -1 && head->right.get()->getBalance()<=0) {
+    if (head->right!= nullptr && b < -1 && head->right.get()->getBalance()<=0) {
         return left_rot<Element>(head);
     }
 
     // LR
-    if (b > 1 &&head->left.get()->getBalance()<0)
+    if (head->left!= nullptr && b > 1 &&head->left.get()->getBalance()<0)
     {
         head->left = shared_ptr<tree<Element>>(left_rot<Element>(head->left.get()));
         return right_rot<Element>(head);
     }
 
     // RL
-    if (b < -1 && head->right.get()->getBalance()>0)
+    if (head->right!= nullptr && b < -1 && head->right.get()->getBalance()>0)
     {
         head->right = shared_ptr<tree<Element>>(right_rot<Element>(head->right.get()));
         return left_rot<Element>(head);
