@@ -34,15 +34,14 @@ public:
       * @tparam Element
       * @param tree
       */
-     void clear(shared_ptr<tree<Element>> tree){
-         if(tree== nullptr){
+     void clear(tree<Element> * tree){
+         if(tree == nullptr){
              return;
          }
-
          clear(tree->left);
          clear(tree->right);
 
-         tree->element= nullptr;
+         delete tree;
          tree = nullptr;
      }
 
@@ -115,16 +114,14 @@ public:
  * @return
  */
  template <class Element>
-tree<Element> * addElement(shared_ptr<tree<Element>> head,Element* e,int iterator,bool is_salary, StatusType* status) {
+tree<Element> * addElement(tree<Element> * head,Element* e,int iterator,bool is_salary, StatusType* status) {
     if(head == nullptr || e == nullptr || iterator <= 0) {
         *status = INVALID_INPUT;
-        return head.get();
+        return head;
     }
     try {
         tree<Element> *t = new tree<Element>(iterator,e);
-        shared_ptr<tree<Element>> temp1= head->left;
-        shared_ptr<tree<Element>> temp2= head->right;
-        tree<Element>* T = addElementRecursively(head.get(),t,iterator,is_salary, status);
+        tree<Element>* T = addElementRecursively(head,t,iterator,is_salary, status);
         if(*status != SUCCESS) {
             delete t;
             return nullptr;
@@ -133,7 +130,7 @@ tree<Element> * addElement(shared_ptr<tree<Element>> head,Element* e,int iterato
     }
     catch (std::bad_alloc &) {
         *status = ALLOCATION_ERROR;
-        return  head.get();
+        return  head;
     }
 }
 
@@ -145,10 +142,10 @@ tree<Element> * addElement(shared_ptr<tree<Element>> head,Element* e,int iterato
  * @return
  */
 template<class Element>
-int getHeight(shared_ptr<tree<Element>> head){
-    if(head== nullptr)
+int getHeight(tree<Element> * head){
+    if(head == nullptr)
         return 0;
-    return head.get()->height;
+    return head->height;
 }
 
 /*int getMax(int a, int b) {
@@ -208,9 +205,9 @@ tree<Element> *findById(tree<Element> *head, int id) {
 /*******************************************   rotate functions   ***********************************************************/
 template <class Element>
 tree<Element>* left_rot(tree<Element> * head) {
-    shared_ptr<tree<Element>> temp1=head->right;
-    shared_ptr<tree<Element>> temp2=temp1->left;
-    temp1->left=shared_ptr<tree<Element>>(head);
+    tree<Element> * temp1=head->right;
+    tree<Element> * temp2=temp1->left;
+    temp1->left=head;
     head->right=temp2;
 
     //head->height = getMax(getHeight(head->left),getHeight(head->right))+1;
@@ -223,14 +220,14 @@ tree<Element>* left_rot(tree<Element> * head) {
     b = getHeight(temp1->right);
     temp1->height = (a > b ? a : b) + 1;
 
-    return temp1.get();
+    return temp1;
 }
 
 template <class Element>
 tree<Element>* right_rot(tree<Element> * head){
-    shared_ptr<tree<Element>> temp1=head->left;
-    shared_ptr<tree<Element>> temp2=temp1->right;
-    temp1->right=shared_ptr<tree<Element>>(head);
+    tree<Element>* temp1=head->left;
+    tree<Element>* temp2=temp1->right;
+    temp1->right=head;
     head->left=temp2;
 
     //head->height=getMax(getHeight(head->left),getHeight(head->right))+1;
@@ -242,7 +239,7 @@ tree<Element>* right_rot(tree<Element> * head){
     b = getHeight(temp1->right);
     temp1->height = (a > b ? a : b) + 1;
 
-    return temp1.get();
+    return temp1;
 }
 
 
@@ -254,15 +251,13 @@ tree<Element>* addElementRecursively(tree<Element>* head,tree<Element>* element_
         return element_tree;
     }
 
-    shared_ptr<tree<Element>> temp1= head->left;
-    shared_ptr<tree<Element>> temp2= head->right;
 
     if (head->id > iterator) {
-        head->left = shared_ptr<tree<Element>>(addElementRecursively(head->left.get(),element_tree,iterator,is_salary, status));
+        head->left = addElementRecursively(head->left,element_tree,iterator,is_salary, status);
     }
 
     else if (head->id < iterator) {
-        head->right = shared_ptr<tree<Element>>(addElementRecursively(head->right.get(),element_tree,iterator,is_salary, status));
+        head->right = addElementRecursively(head->right,element_tree,iterator,is_salary, status);
 
  }
     else { // cant be equal
@@ -271,17 +266,14 @@ tree<Element>* addElementRecursively(tree<Element>* head,tree<Element>* element_
             *status = FAILURE; // already exists in tree
             return head; // possibly element_tree
         }
-        else if(head->element.get()->id > element_tree->element.get()->id){
-            head->right = shared_ptr<tree<Element>>(addElementRecursively(head->right.get(),element_tree,iterator,is_salary, status));
+        else if(head->element->id > element_tree->element->id){
+            head->right = addElementRecursively(head->right,element_tree,iterator,is_salary, status);
             }
 
-        else if(head->element.get()->id < element_tree->element.get()->id){
-            head->left = shared_ptr<tree<Element>>(addElementRecursively(head->left.get(),element_tree,iterator,is_salary, status));
+        else if(head->element->id < element_tree->element->id){
+            head->left = addElementRecursively(head->left,element_tree,iterator,is_salary, status);
         }
     }
-
-    shared_ptr<tree<Element>> temp3= head->left;
-    shared_ptr<tree<Element>> temp4= head->right;
 
     *status = SUCCESS;
     int a = getHeight(head->left);
@@ -291,26 +283,26 @@ tree<Element>* addElementRecursively(tree<Element>* head,tree<Element>* element_
     int b = head->getBalance();
 
     // LL
-    if (head->left != nullptr && (b > 1 && iterator < head->left.get()->id)) {
+    if (head->left != nullptr && (b > 1 && iterator < head->left->id)) {
         return right_rot<Element>(head);
     }
 
     // RR
-    if (head->right != nullptr && (b < -1 && iterator < head->right.get()->id)) {
+    if (head->right != nullptr && (b < -1 && iterator > head->right->id)) {
         return left_rot<Element>(head);
     }
 
     // LR
-    if (head->left != nullptr && (b > 1 && iterator > head->left.get()->id))
+    if (head->left != nullptr && (b > 1 && iterator > head->left->id))
     {
-        head->left = shared_ptr<tree<Element>>(left_rot<Element>(head->left.get()));
+        head->left = left_rot<Element>(head->left);
         return right_rot<Element>(head);
     }
 
     // RL
-    if (head->right != nullptr && (b < -1 && iterator <  head->right.get()->id))
+    if (head->right != nullptr && (b < -1 && iterator <  head->right->id))
     {
-        head->right = shared_ptr<tree<Element>>(right_rot<Element>(head->right.get()));
+        head->right = right_rot<Element>(head->right);
         return left_rot<Element>(head);
     }
 
@@ -340,15 +332,15 @@ tree<Element> * deleteElementRecursively( tree<Element> * head,Element* e,bool i
         id = e->salary;
 
     if (id < head->id) {
-        head->left = shared_ptr<tree<Element>>(deleteElementRecursively(head->left.get(),e, is_salary, status));
+        head->left = deleteElementRecursively(head->left,e, is_salary, status);
     } else if (id > head->id) {
-        head->right = shared_ptr<tree<Element>>(deleteElementRecursively(head->right.get(),e, is_salary, status));
-    } else if (is_salary && head->element.get()->id != id) {
+        head->right = deleteElementRecursively(head->right,e, is_salary, status);
+    } else if (is_salary && head->element->id != id) {
         id = e->id;
         if (id < head->id) {
-            head->right = shared_ptr<tree<Element>>(deleteElementRecursively(head->right.get(), e, is_salary, status));
+            head->right = deleteElementRecursively(head->right, e, is_salary, status);
         } else if (id > head->id) {
-            head->left = shared_ptr<tree<Element>>(deleteElementRecursively(head->left.get(), e, is_salary, status));
+            head->left = deleteElementRecursively(head->left, e, is_salary, status);
         }
     }
         //found the element to be deleted
@@ -359,37 +351,38 @@ tree<Element> * deleteElementRecursively( tree<Element> * head,Element* e,bool i
         if (head->left == nullptr || head->right == nullptr) {
             if (head->left == nullptr && head->right == nullptr) {
                 //make sure that we don't have memory leak at that point, shared ptr suppose to free
-                head->element = nullptr;
+                temp= head;
                 head = nullptr;
             } else {
-                temp = head->left ? head->left.get() : head->right.get();
+                temp = head->left ? head->left : head->right;
                 head->element = temp->element;
                 if (is_salary) {
-                    head->id = temp->element.get()->salary;
+                    head->id = temp->element->salary;
                 } else
                     head->id = temp->id;
-
-                temp->element = nullptr;
-                temp = nullptr;
             }
+            delete temp;
+
             *status = SUCCESS;
         }
             //2 child case
         else {
-            temp = head;
-            while (temp->left != nullptr) {
-                temp = temp->left.get();
+            temp = head->right;
+            if(temp != nullptr) {
+                while (temp->left != nullptr) {
+                    temp = temp->left;
+                }
+
+                head->element = temp->element;
+                if (is_salary) {
+                    head->id = temp->element->salary;
+                } else
+                    head->id = temp->id;
+
+                head->right = deleteElementRecursively(head->right,
+                                                       temp->element, is_salary, status);
             }
-            head->element = temp->element;
-            if (is_salary) {
-                head->id = temp->element.get()->salary;
-            } else
-                head->id = temp->id;
-
-            head->right = shared_ptr<tree<Element>>(deleteElementRecursively(head->right.get(),
-                                                                             temp->element.get(), is_salary, status));
         }
-
     }
 
     *status = SUCCESS;
@@ -404,26 +397,26 @@ tree<Element> * deleteElementRecursively( tree<Element> * head,Element* e,bool i
     int b = head->getBalance();
 
     // LL
-    if (head->left!= nullptr && b > 1 && head->left.get()->getBalance()>=0) {
+    if (head->left!= nullptr && b > 1 && head->left->getBalance()>=0) {
         return right_rot<Element>(head);
     }
 
     // RR
-    if (head->right!= nullptr && b < -1 && head->right.get()->getBalance()<=0) {
+    if (head->right!= nullptr && b < -1 && head->right->getBalance()<=0) {
         return left_rot<Element>(head);
     }
 
     // LR
-    if (head->left!= nullptr && b > 1 &&head->left.get()->getBalance()<0)
+    if (head->left!= nullptr && b > 1 &&head->left->getBalance()<0)
     {
-        head->left = shared_ptr<tree<Element>>(left_rot<Element>(head->left.get()));
+        head->left = left_rot<Element>(head->left);
         return right_rot<Element>(head);
     }
 
     // RL
-    if (head->right!= nullptr && b < -1 && head->right.get()->getBalance()>0)
+    if (head->right!= nullptr && b < -1 && head->right->getBalance()>0)
     {
-        head->right = shared_ptr<tree<Element>>(right_rot<Element>(head->right.get()));
+        head->right = right_rot<Element>(head->right);
         return left_rot<Element>(head);
     }
     // do nothing:
@@ -434,14 +427,14 @@ tree<Element> * deleteElementRecursively( tree<Element> * head,Element* e,bool i
 
 
 template <class Element>
-tree<Element>* arrayToTree(shared_ptr<Element>* array,int begin,int end){
+tree<Element> * arrayToTree(Element ** array,int begin,int end){
     if(begin>end){
         return nullptr;
     }
     int mid=(begin+end)/2;
-    tree<Element>* head = new tree<Element>(array[mid].get()->id,array[mid].get());
-    head->left = shared_ptr<tree<Element>>(arrayToTree(array,begin,mid-1));
-    head->right = shared_ptr<tree<Element>>(arrayToTree(array,mid+1,end));
+    tree<Element> * head = new tree<Element>((array[mid])->id,array[mid]);
+    head->left = arrayToTree(array,begin,mid-1);
+    head->right = arrayToTree(array,mid+1,end);
 
     int a = getHeight(head->left);
     int b = getHeight(head->right);
@@ -452,16 +445,17 @@ tree<Element>* arrayToTree(shared_ptr<Element>* array,int begin,int end){
 
 //the func also delete the old values
 template <class Element>
-void treeToArray(tree<Element>* head, shared_ptr<Element>* dest, int* index){
+void treeToArray(tree<Element>* head, Element ** dest, int* index){
     if(head== nullptr){
         return;
     }
-    treeToArray(head->left.get(),dest,index);
-    dest[*index]=shared_ptr<Element>(head->element.get());
-    head->element= nullptr;
+    treeToArray(head->left,dest,index);
+    dest[*index]=head->element;
+    //head->element = nullptr;
     (*index)++;
-    treeToArray(head->right.get(),dest,index);
-    head= nullptr;
+    treeToArray(head->right,dest,index);
+    //head = nullptr;
+    delete head;
 }
 
 
