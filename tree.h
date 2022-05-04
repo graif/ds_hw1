@@ -274,14 +274,49 @@ tree<Element> *addElementRecursively(tree<Element> *head, tree<Element> *element
         if (!is_salary) {
             *status = FAILURE; // already exists in tree
             return head; // possibly element_tree
+        } else if (head->element->id > element_tree->element->id) {
+            head->right = addElementRecursively(head->right, element_tree, iterator, is_salary, status);
+        } else if (head->element->id < element_tree->element->id) {
+            head->left = addElementRecursively(head->left, element_tree, iterator, is_salary, status);
+        } else {
+            *status = FAILURE; // already exists in tree
+            return head; // possibly element_tree
         }
-        else if(head->element->id > element_tree->element->id){
-            head->right = addElementRecursively(head->right,element_tree,iterator,is_salary, status);
-            }
 
-        else if(head->element->id < element_tree->element->id){
-            head->left = addElementRecursively(head->left,element_tree,iterator,is_salary, status);
+       /* *status = SUCCESS;
+        int a = getHeight(head->left);
+        int c = getHeight(head->right);
+        head->height = (a > c ? a : c) + 1;
+        //head->height = getMax(getHeight(head->left), getHeight(head->right)) +1;
+        int b = getBalance(head);
+
+        // LL
+        if (head->left != nullptr && (b > 1 && (element_tree->element->id > head->left->element->id))) {
+            return right_rot<Element>(head);
         }
+
+        // RR
+        if (head->right != nullptr && (b < -1 && (element_tree->element->id < head->right->element->id))) {
+            return left_rot<Element>(head);
+        }
+
+        // LR
+        if (head->left != nullptr && head->left->right != nullptr &&
+            (b > 1 && (element_tree->element->id < head->left->element->id))) {
+            head->left = left_rot<Element>(head->left);
+            return right_rot<Element>(head);
+        }
+
+        // RL
+        if (head->right != nullptr && head->right->left != nullptr &&
+            (b < -1 && (element_tree->element->id > head->right->element->id))) {
+            head->right = right_rot<Element>(head->right);
+            return left_rot<Element>(head);
+        }
+
+        // do nothing:
+        return head;*/
+
     }
 
     *status = SUCCESS;

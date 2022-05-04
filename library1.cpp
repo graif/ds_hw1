@@ -769,17 +769,13 @@ StatusType GetAllEmployeesBySalary(void *DS, int CompanyID, int **Employees, int
     return SUCCESS; //check which status is required here
 }*/
 
-StatusType GetHighestEarnerInEachCompany_helper(void *DS, int NumOfCompanies, int **Employees, tree<Company>* c, Company** companies, int* counter) {
-    if(*counter >= NumOfCompanies) return SUCCESS;
-    if(c->left == nullptr) {
-        // add c
-        companies[*counter] = c->element;
-        (*counter)++;
-        return SUCCESS; // smallest node
-    }
+StatusType GetHighestEarnerInEachCompany_helper(void *DS, int NumOfCompanies, tree<Company> *c, Company **companies,
+                                                int *counter) {
+    if (c == nullptr) return SUCCESS;
 
-    StatusType result = GetHighestEarnerInEachCompany_helper(DS, NumOfCompanies, Employees, c->left, companies, counter);
-    if(result != SUCCESS) return result;
+    StatusType result = GetHighestEarnerInEachCompany_helper(DS, NumOfCompanies, c->left, companies, counter);
+
+    if (result != SUCCESS) return result;
 
     if (*counter < NumOfCompanies) {
         // add c
@@ -798,7 +794,7 @@ StatusType GetHighestEarnerInEachCompany(void *DS, int NumOfCompanies, int **Emp
         if ((DS == nullptr) || (Employees == nullptr) || NumOfCompanies < 1) return INVALID_INPUT;
         *Employees = (int *) malloc(sizeof(int) * (NumOfCompanies)); // this is supposed to be deleted by 'them'
 
-        Company** companies = new Company*[NumOfCompanies];
+        Company **companies = new Company *[NumOfCompanies];
         int counter = 0;
 
         tree<Company> *c = ((DataStrcture *) DS)->company_head;
