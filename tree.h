@@ -20,14 +20,7 @@ public:
     tree<Element> * right;
     tree(int id) : id(id), height(1), element(nullptr), left(nullptr), right(nullptr) {};
     tree(int id, Element* element) : id(id), height(1), element(element), left(nullptr), right(nullptr) {};
-    ~tree() {
-        if(this->element) {
-            delete element;
-            this->element = nullptr;
-        }
-        this->left = nullptr;
-        this->right = nullptr;
-     };
+    ~tree()=default;
 
      /**
       * the func clear the tree (deallocate element and tree node)
@@ -42,7 +35,6 @@ public:
          clear(tree->right);
 
          delete tree;
-         tree = nullptr;
      }
 
      /**
@@ -94,14 +86,7 @@ public:
 
     }
 
-    /**
-     * the func return the balance height of the curr node
-     * @return
-     */
-    int getBalance() {
-        if(this == nullptr) return 0;
-        return (getHeight(this->left) - getHeight(this->right));
-    }
+
 
 };
 
@@ -146,6 +131,13 @@ int getHeight(tree<Element> * head){
     if(head == nullptr)
         return 0;
     return head->height;
+}
+template<class Element>
+int getBalance(tree<Element> * head)
+{
+    if (head == nullptr)
+        return 0;
+    return (getHeight(head->left) - getHeight(head->right));
 }
 
 /*int getMax(int a, int b) {
@@ -280,7 +272,7 @@ tree<Element>* addElementRecursively(tree<Element>* head,tree<Element>* element_
     int c = getHeight(head->right);
     head->height = (a > c ? a : c) + 1;
     //head->height = getMax(getHeight(head->left), getHeight(head->right)) +1;
-    int b = head->getBalance();
+    int b = getBalance(head);
 
     // LL
     if (head->left != nullptr && (b > 1 && iterator < head->left->id)) {
@@ -322,7 +314,7 @@ tree<Element>* addElementRecursively(tree<Element>* head,tree<Element>* element_
 template <class Element>
 tree<Element> * deleteElementRecursively( tree<Element> * head,Element* e,bool is_salary,StatusType* status) {
 
-    if (head == nullptr || head->element == nullptr || e == nullptr) {
+    if (head == nullptr || e == nullptr) {
         *status = FAILURE; // already exists in tree
         return head;
     }
@@ -337,9 +329,9 @@ tree<Element> * deleteElementRecursively( tree<Element> * head,Element* e,bool i
         head->right = deleteElementRecursively(head->right,e, is_salary, status);
     } else if (is_salary && head->element->id != id) {
         id = e->id;
-        if (id < head->id) {
+        if (id < head->element->id) {
             head->right = deleteElementRecursively(head->right, e, is_salary, status);
-        } else if (id > head->id) {
+        } else if (id > head->element->id) {
             head->left = deleteElementRecursively(head->left, e, is_salary, status);
         }
     }
@@ -394,27 +386,28 @@ tree<Element> * deleteElementRecursively( tree<Element> * head,Element* e,bool i
     int c = getHeight(head->right);
     head->height = (a > c ? a : c) + 1;
     //head->height = getMax(getHeight(head->left), getHeight(head->right)) +1;// valgrind error (getMax defined multiple times)
-    int b = head->getBalance();
+    int b =getBalance(head);;
 
     // LL
-    if (head->left!= nullptr && b > 1 && head->left->getBalance()>=0) {
+    if (head->left!= nullptr && b > 1 && getBalance(head->left)>=0) {
         return right_rot<Element>(head);
     }
 
-    // RR
-    if (head->right!= nullptr && b < -1 && head->right->getBalance()<=0) {
-        return left_rot<Element>(head);
-    }
-
     // LR
-    if (head->left!= nullptr && b > 1 &&head->left->getBalance()<0)
+    if (head->left!= nullptr && b > 1 &&getBalance(head->left)<0)
     {
         head->left = left_rot<Element>(head->left);
         return right_rot<Element>(head);
     }
 
+    // RR
+    if (head->right!= nullptr && b < -1 && getBalance(head->right)<=0) {
+        return left_rot<Element>(head);
+    }
+
+
     // RL
-    if (head->right!= nullptr && b < -1 && head->right->getBalance()>0)
+    if (head->right!= nullptr && b < -1 && getBalance(head->right)>0)
     {
         head->right = right_rot<Element>(head->right);
         return left_rot<Element>(head);

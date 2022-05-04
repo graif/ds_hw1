@@ -270,7 +270,7 @@ StatusType RemoveCompany(void *DS, int CompanyID){
             return INVALID_INPUT;
         }
         tree<Company> *c = findById(((DataStrcture *) DS)->company_head, CompanyID);
-        if (c == nullptr || c->element->employees_pointers == nullptr)
+        if (c == nullptr )
             return FAILURE; // company doesn't exist, nowhere to add employee
         StatusType status = FAILURE;
         tree<Company> *temp = ((DataStrcture *) DS)->company_head->eraseElement(c->element,false, &status);
@@ -299,37 +299,32 @@ StatusType RemoveEmployee(void *DS, int EmployeeID){
         if (e == nullptr||e->element== nullptr ) return FAILURE; // company doesn't exist, nowhere to add employee
         Company *c = e->element->company;
         StatusType status = FAILURE;
-        Employee* temp_e = new Employee(EmployeeID, c, e->element->salary,e->element->grade);
         //delete emp pntr by salary DS
-        tree<Employee> *temp = ((DataStrcture *) DS)->employees_pointers_by_salary->eraseElement(temp_e, true,&status);
+        tree<Employee> *temp = ((DataStrcture *) DS)->employees_pointers_by_salary->eraseElement(e->element, true,&status);
         if (status != SUCCESS) {
-            delete temp_e;
             return status;
         }
         ((DataStrcture *) DS)->employees_pointers_by_salary = temp;
 
         //delete emp pntr Company
-        temp = c->employees_pointers->eraseElement(temp_e, false,&status);
+        temp = c->employees_pointers->eraseElement(e->element, false,&status);
 
         if (status != SUCCESS) {
-            delete temp_e;
             return status;
         }
         c->employees_pointers = temp;
 
        //delete emp pntr by salary Company
-        temp = c->employees_pointers_by_salary->eraseElement(temp_e, true,&status);
+        temp = c->employees_pointers_by_salary->eraseElement(e->element, true,&status);
 
         if (status != SUCCESS) {
-            delete temp_e;
             return status;
         }
         c->employees_pointers_by_salary = temp;
 
         //delete emp pntr DS
-        temp = ((DataStrcture *) DS)->employee_head->eraseElement(temp_e,false,&status);
+        temp = ((DataStrcture *) DS)->employee_head->eraseElement( e->element,false,&status);
         if (status != SUCCESS) {
-            delete temp_e;
             return status;
         }
         ((DataStrcture *) DS)->employee_head = temp;
@@ -355,7 +350,7 @@ StatusType RemoveEmployee(void *DS, int EmployeeID){
         ((DataStrcture *)DS)->highest_earner_employee = UpdateHighestEarner(((DataStrcture *)DS)->employees_pointers_by_salary);
         c->highest_earner_employee = UpdateHighestEarner(c->employees_pointers_by_salary);
 
-        delete temp_e;
+        delete e->element;
         return SUCCESS;
     }
 

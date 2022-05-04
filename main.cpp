@@ -157,6 +157,7 @@ static OnFuncPtr OnCmdPtrs[] = {
 int main(int argc, const char**argv) {
     void* ds= Init();
     AddCompany(ds,1, 1);
+    RemoveCompany(ds,1);
     AddCompany(ds,2, 20);
     AddCompany(ds,3, 3);
     AddEmployee(ds,1,2,10,1);
