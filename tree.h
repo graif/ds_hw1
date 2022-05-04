@@ -109,6 +109,7 @@ tree<Element>* clear(tree<Element>* &tree) {
     tree->right = nullptr;
 
     delete tree;
+    return nullptr;
 }
 
 

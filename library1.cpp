@@ -307,7 +307,7 @@ StatusType RemoveEmployee(void *DS, int EmployeeID) {
         if (EmployeeID <= 0 || DS == nullptr) {
             return INVALID_INPUT;
         }
-        DataStrcture *DSS = (DataStrcture *) DS;
+        //DataStrcture *DSS = (DataStrcture *) DS;
 
         tree<Employee> *e = findById(((DataStrcture *) DS)->employee_head, EmployeeID);
         if (e == nullptr || e->element == nullptr) return FAILURE; // company doesn't exist, nowhere to add employee
@@ -598,7 +598,7 @@ StatusType AcquireCompany(void *DS, int AcquirerID, int TargetID, double Factor)
         if (DS == nullptr || AcquirerID <= 0 || TargetID <= 0 || AcquirerID == TargetID || Factor < 1.00) {
             return INVALID_INPUT;
         }
-        DataStrcture *DSS = (DataStrcture *) DS;
+        //DataStrcture *DSS = (DataStrcture *) DS;
         tree<Company> *Acquirer = findById(((DataStrcture *) DS)->company_head, AcquirerID);
         tree<Company> *Target = findById(((DataStrcture *) DS)->company_head, TargetID);
         if (Acquirer == nullptr || Target == nullptr || Acquirer->element->value < (10 * Target->element->value)) {
