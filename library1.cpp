@@ -482,6 +482,25 @@ void printEmployeesSalary(Employee** employees, int size) {
     std::cout << "]" << std::endl;
 }
 
+
+tree<Employee> *arrayToTree(Employee **array, int begin, int end) {
+    if (begin > end) {
+        return nullptr;
+    }
+    int mid = (begin + end) / 2;
+
+    tree<Employee> *head = new tree<Employee>(array[mid]->id, array[mid]);
+    head->left = arrayToTree(array, begin, mid - 1);
+    head->right = arrayToTree(array, mid + 1, end);
+
+    int a = getHeight(head->left);
+    int b = getHeight(head->right);
+    head->height = (a > b ? a : b) + 1;
+
+    //head->height = getMax(getHeight(head->left), getHeight(head->right)) +1; // valgrind error (getMax defined multiple times)
+    return head;
+}
+
 tree<Employee> *
 CombineTree(tree<Employee> *head1, tree<Employee> *head2, int size1, int size2, StatusType *status, bool isSalary) {
 
@@ -496,22 +515,22 @@ CombineTree(tree<Employee> *head1, tree<Employee> *head2, int size1, int size2, 
 
     clear(head1);
     clear(head2);
-
-    /*if(!isSalary) {
+/*
+    if(!isSalary) {
         printEmployees(tree1, index);
         printEmployees(tree2, index2);
     }
     else {
         printEmployeesSalary(tree1, index);
         printEmployeesSalary(tree2, index2);
-    }*/
+    }
 
-    // std::cout << "size1: " << size1 << " index1: " << index << " size2: " << size2 << " index2: " << index2 << std::endl;
+     std::cout << "size1: " << size1 << " index1: " << index << " size2: " << size2 << " index2: " << index2 << std::endl;
+     */
     index = 0;
     index2 = 0;
 
     Employee **merged = new Employee *[size1 + size2];
-
     int i = 0, j = 0, k = 0;
     while ((i < size1) && (j < size2)) {
         if (!isSalary) {
@@ -553,8 +572,10 @@ CombineTree(tree<Employee> *head1, tree<Employee> *head2, int size1, int size2, 
         }
         k++;
     }
+
+    std::cout << "size1: " << size1 << " index1: " << i << " size2: " << size2 << " index2: " << j << std::endl;
     while (j < size2) {
-        merged[k] = tree1[j]; // tree1[j] invalid read
+        merged[k] = tree2[j]; // tree1[j] invalid read
         merged[k]->company = c;  // tree1[j]->company invalid write
         k++;
         j++;
@@ -565,10 +586,11 @@ CombineTree(tree<Employee> *head1, tree<Employee> *head2, int size1, int size2, 
         k++;
         i++;
     }
-
-    //if(!isSalary) printEmployees(merged, size1+size2);
-    //else printEmployeesSalary(merged, size1+size2);
-    tree<Employee> *new_head = arrayToTree<Employee>(merged, 0, size2 + size1 - 1);
+/*
+    if(!isSalary) printEmployees(merged, size1+size2);
+    else printEmployeesSalary(merged, size1+size2);
+*/
+    tree<Employee> *new_head = arrayToTree(merged, 0, size2 + size1 - 1);
 
     /*for (int i = 0; i < size1; i++) {
         delete tree1[i];

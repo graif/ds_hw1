@@ -520,22 +520,7 @@ tree<Element> *deleteElementRecursively(tree<Element> *head, Element *e, bool is
 }
 
 
-template<class Element>
-tree<Element> *arrayToTree(Element **array, int begin, int end) {
-    if (begin > end) {
-        return nullptr;
-    }
-    int mid = (begin + end) / 2;
-    tree<Element> *head = new tree<Element>((array[mid])->id, array[mid]);
-    head->left = arrayToTree(array, begin, mid - 1);
-    head->right = arrayToTree(array, mid + 1, end);
 
-    int a = getHeight(head->left);
-    int b = getHeight(head->right);
-    head->height = (a > b ? a : b) + 1;
-    //head->height = getMax(getHeight(head->left), getHeight(head->right)) +1; // valgrind error (getMax defined multiple times)
-    return head;
-}
 
 //the func also delete the old values
 template<class Element>
