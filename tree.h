@@ -112,6 +112,23 @@ tree<Element>* clear(tree<Element>* &tree) {
     return nullptr;
 }
 
+/**This Clears Elements too**/
+template<class Element>
+tree<Element>* clearAll(tree<Element>* &tree) {
+    if (tree == nullptr) {
+        return nullptr;
+    }
+    clearAll(tree->left);
+    tree->left = nullptr;
+    clearAll(tree->right);
+    tree->right = nullptr;
+
+    delete tree->element;
+    tree->element = nullptr;
+    delete tree;
+    return nullptr;
+}
+
 
 /**
  * the func add element to a tree by iterator (can be id or salary in our cases)

@@ -558,8 +558,8 @@ CombineTree(tree<Employee> *head1, tree<Employee> *head2, int size1, int size2, 
         k++;
     }
     while (j < size2) {
-        merged[k] = tree1[j];
-        merged[k]->company = c;
+        merged[k] = tree1[j]; // tree1[j] invalid read
+        merged[k]->company = c;  // tree1[j]->company invalid write
         k++;
         j++;
     }
@@ -800,6 +800,7 @@ StatusType GetHighestEarnerInEachCompany(void *DS, int NumOfCompanies, int **Emp
         tree<Company> *c = ((DataStrcture *) DS)->company_head;
         StatusType result = GetHighestEarnerInEachCompany_helper(DS, NumOfCompanies, c, companies, &counter);
         if (result != SUCCESS) {
+            delete[] companies;
             /*for(int i = 0; i < counter; i++) {
                 delete companies[i];
             }
@@ -807,6 +808,7 @@ StatusType GetHighestEarnerInEachCompany(void *DS, int NumOfCompanies, int **Emp
             return result;
         }
         if (counter != NumOfCompanies) {
+            delete[] companies;
             /*for(int i = 0; i < counter; i++) {
                 delete companies[i];
             }
@@ -822,6 +824,7 @@ StatusType GetHighestEarnerInEachCompany(void *DS, int NumOfCompanies, int **Emp
             delete companies[i];
         }
         delete[] companies;*/
+        delete[] companies;
     }
     catch (std::bad_alloc &) {
         return ALLOCATION_ERROR;
@@ -909,5 +912,29 @@ StatusType GetNumEmployeesMatching(void *DS, int CompanyID, int MinEmployeeID, i
     return SUCCESS;
 }
 
+void Quit_Helper(void **DS, tree<Company>* &curr) {
+    if(curr == nullptr) return;
+
+    Quit_Helper(DS, curr->left);
+    Quit_Helper(DS, curr->right);
+
+    clear(curr->element->employees_pointers_by_salary);
+    curr->element->employees_pointers = nullptr;
+    clear(curr->element->employees_pointers);
+    curr->element->employees_pointers_by_salary = nullptr;
+    delete curr->element;
+    curr->element = nullptr;
+    delete curr;
+}
+
 void Quit(void **DS) {
+    tree<Company>* &c = ((DataStrcture*)DS)->company_head;
+    Quit_Helper(DS,c);
+    ((DataStrcture*)DS)->company_head = nullptr;
+    clearAll(((DataStrcture*)DS)->employee_head);
+    ((DataStrcture*)DS)->employee_head = nullptr;
+    clear(((DataStrcture*)DS)->employees_pointers_by_salary);
+    ((DataStrcture*)DS)->employees_pointers_by_salary = nullptr;
+    ((DataStrcture*)DS)->highest_earner_employee = nullptr;
+    delete ((DataStrcture*)DS);
 }
