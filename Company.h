@@ -23,7 +23,11 @@ public:
     tree<Employee>* employees_pointers;
     tree<Employee>* employees_pointers_by_salary;
     Company(int value, int company_id);
-    ~Company() = default;
+    ~Company() {
+            highest_earner_employee=nullptr;
+            employees_pointers=nullptr;
+            employees_pointers_by_salary=nullptr;
+    };
 
 };
 

@@ -13,7 +13,7 @@ class DataStrcture {
 public:
     DataStrcture() = default;
 
-    ~DataStrcture() = default;
+    ~DataStrcture(){};
 
     int employee_count;
     tree<Company> *company_head;
@@ -286,7 +286,7 @@ StatusType RemoveCompany(void *DS, int CompanyID) {
         if (c == nullptr || c->element->employees_pointers != nullptr)
             return FAILURE; // company doesn't exist, nowhere to add employee
         StatusType status = FAILURE;
-        tree<Company> *temp = ((DataStrcture *) DS)->company_head->eraseElement(c->element, false, &status);
+        tree<Company> *temp = ((DataStrcture *) DS)->company_head->eraseElement(c->element, false,true, &status);
         if (status != SUCCESS) {
             return status;
         }
@@ -315,14 +315,14 @@ StatusType RemoveEmployee(void *DS, int EmployeeID) {
         Company *c = e->element->company;
         StatusType status = FAILURE;
         //delete emp pntr by salary DS
-        tree<Employee> *temp = ((DataStrcture *) DS)->employees_pointers_by_salary->eraseElement(ele, true, &status);
+        tree<Employee> *temp = ((DataStrcture *) DS)->employees_pointers_by_salary->eraseElement(ele, true,false, &status);
         if (status != SUCCESS) {
             return status;
         }
         ((DataStrcture *) DS)->employees_pointers_by_salary = temp;
 
         //delete emp pntr Company
-        temp = c->employees_pointers->eraseElement(ele, false, &status);
+        temp = c->employees_pointers->eraseElement(ele, false,false, &status);
 
         if (status != SUCCESS) {
             return status;
@@ -330,7 +330,7 @@ StatusType RemoveEmployee(void *DS, int EmployeeID) {
         c->employees_pointers = temp;
 
         //delete emp pntr by salary Company
-        temp = c->employees_pointers_by_salary->eraseElement(ele, true, &status);
+        temp = c->employees_pointers_by_salary->eraseElement(ele, true,false, &status);
 
         if (status != SUCCESS) {
             return status;
@@ -338,7 +338,7 @@ StatusType RemoveEmployee(void *DS, int EmployeeID) {
         c->employees_pointers_by_salary = temp;
 
         //delete emp pntr DS
-        temp = ((DataStrcture *) DS)->employee_head->eraseElement(ele, false, &status);
+        temp = ((DataStrcture *) DS)->employee_head->eraseElement(ele, false,false, &status);
         if (status != SUCCESS) {
             return status;
         }
@@ -365,7 +365,6 @@ StatusType RemoveEmployee(void *DS, int EmployeeID) {
         ((DataStrcture *) DS)->highest_earner_employee = UpdateHighestEarner(
                 ((DataStrcture *) DS)->employees_pointers_by_salary);
         c->highest_earner_employee = UpdateHighestEarner(c->employees_pointers_by_salary);
-
         delete ele;
         return SUCCESS;
     }
@@ -455,13 +454,10 @@ StatusType HireEmployee(void *DS, int EmployeeID, int NewCompanyID) {
             return status;
         }
         status = AddEmployee(DS, new_emp->id, NewCompanyID, new_emp->salary, new_emp->grade);
-
-        if (status != SUCCESS) {
-            delete new_emp;
-            return status;
-        }
         delete new_emp;
-        return SUCCESS;
+
+        return status;
+
     }
 
     catch (std::bad_alloc &) {
@@ -912,6 +908,7 @@ StatusType GetNumEmployeesMatching(void *DS, int CompanyID, int MinEmployeeID, i
     return SUCCESS;
 }
 
+/*
 void Quit_Helper(void **DS, tree<Company>* &curr) {
     if(curr == nullptr) return;
 
@@ -937,4 +934,35 @@ void Quit(void **DS) {
     ((DataStrcture*)DS)->employees_pointers_by_salary = nullptr;
     ((DataStrcture*)DS)->highest_earner_employee = nullptr;
     delete ((DataStrcture*)DS);
+}
+*/
+
+void Quit_Helper(void *DS, tree<Company>* &curr) {
+    if(curr == nullptr) return;
+
+    Quit_Helper(DS, curr->left);
+    curr->left= nullptr;
+    Quit_Helper(DS, curr->right);
+
+    clear(curr->element->employees_pointers_by_salary);
+    curr->element->employees_pointers_by_salary = nullptr;
+    clear(curr->element->employees_pointers);
+    curr->element->employees_pointers = nullptr;
+    delete curr->element;
+    curr->element = nullptr;
+    delete curr;
+}
+
+void Quit(void **DS) {
+    DataStrcture* DSS=((DataStrcture*)*DS);
+    tree<Company>* &c = DSS->company_head;
+    Quit_Helper(DSS,c);
+    DSS->company_head = nullptr;
+    clear(DSS->employees_pointers_by_salary);
+    DSS->employees_pointers_by_salary = nullptr;
+    clearAll(DSS->employee_head);
+    DSS->employee_head = nullptr;
+    DSS->highest_earner_employee = nullptr;
+    delete DSS;
+    *DS = nullptr;
 }
