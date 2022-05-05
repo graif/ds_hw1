@@ -470,10 +470,6 @@ tree<Element> *deleteElementRecursively(tree<Element> *head, Element *e, bool is
 
             delete temp;
 
-            if (head != nullptr) {
-                head->left = nullptr;
-                head->right = nullptr;
-            }
 
             *status = SUCCESS;
         }
@@ -509,23 +505,23 @@ tree<Element> *deleteElementRecursively(tree<Element> *head, Element *e, bool is
     int b = getBalance(head);;
 
     // LL
-    if (head->left != nullptr && b > 1 && getBalance(head->left) >= 0) {
+    if ( b > 1 && getBalance(head->left) >= 0) {
         return right_rot<Element>(head);
     }
 
     // LR
-    if (head->left != nullptr && b > 1 && getBalance(head->left) < 0) {
+    if (b > 1 && getBalance(head->left) < 0) {
         head->left = left_rot<Element>(head->left);
         return right_rot<Element>(head);
     }
 
     // RR
-    if (head->right != nullptr && b < -1 && getBalance(head->right) <= 0) {
+    if ( b < -1 && getBalance(head->right) <= 0) {
         return left_rot<Element>(head);
     }
 
     // RL
-    if (head->right != nullptr && b < -1 && getBalance(head->right) > 0) {
+    if ( b < -1 && getBalance(head->right) > 0) {
         head->right = right_rot<Element>(head->right);
         return left_rot<Element>(head);
     }
