@@ -58,30 +58,33 @@ public:
             return this;
         }
     }*/
-    /**
-       * the func erase element from a tree by iterator (can be id or salary in our cases)
-       * @param e
-       * @param iterator
-       * @param status
-       * @return
-       */
-    tree<Element> *eraseElement(Element *e, bool is_salary,bool is_deep_delete, StatusType *status) {
-        // need to address deletion of head node at a higher scope (bahootz)
-        if (id <= 0) {
-            *status = INVALID_INPUT;
-            return this;
-        }
-        if (e == nullptr) {
-            *status = FAILURE;
-            return this;
-        }
-
-        return deleteElementRecursively(this, e, is_salary, is_deep_delete, status);
-
-    }
 
 
 };
+
+/**
+   * the func erase element from a tree by iterator (can be id or salary in our cases)
+   * @param e
+   * @param iterator
+   * @param status
+   * @return
+   */
+   template<class Element>
+tree<Element>* eraseElement(tree<Element>* &head,Element *e, bool is_salary,bool is_deep_delete, StatusType *status) {
+    // need to address deletion of head node at a higher scope (bahootz)
+    if (head->id <= 0) {
+        *status = INVALID_INPUT;
+        return head;
+    }
+    if (e == nullptr) {
+        *status = FAILURE;
+        return head;
+    }
+
+    return deleteElementRecursively(head, e, is_salary, is_deep_delete, status);
+
+}
+
 
 /**
      * the func clear the tree (deallocate element and tree node)
@@ -100,6 +103,7 @@ void clear_helper(tree<Element>* &tree) {
     tree->right = nullptr;
 
     delete tree;
+    tree= nullptr;
 }
 
 template<class Element>
@@ -113,6 +117,7 @@ tree<Element>* clear(tree<Element>* &tree) {
     tree->right = nullptr;
 
     delete tree;
+    tree= nullptr;
     return nullptr;
 }
 
@@ -130,6 +135,7 @@ tree<Element>* clearAll(tree<Element>* &tree) {
     delete tree->element;
     tree->element = nullptr;
     delete tree;
+    tree= nullptr;
     return nullptr;
 }
 
@@ -152,6 +158,7 @@ tree<Element> *addElement(tree<Element> *head, Element *e, int iterator, bool is
         tree<Element> *T = addElementRecursively(head, t, iterator, is_salary, status);
         if (*status != SUCCESS) {
             delete t;
+            t= nullptr;
             return nullptr;
         }
         return T;
@@ -441,13 +448,20 @@ tree<Element> *deleteElementRecursively(tree<Element> *head, Element *e, bool is
                 //make sure that we don't have memory leak at that point, shared ptr suppose to free
                 temp = head;
                 head = nullptr;
-                if(is_deep_delete)
+                if(is_deep_delete){
                     delete temp->element;
+                    temp->element= nullptr;
+                }
             } else {
                 temp = head->left ? head->left : head->right;
-                if(is_deep_delete)
+                if(is_deep_delete){
                     delete head->element;
+                }
                 head->element = temp->element;
+                head->left=temp->left;
+                head->right=temp->right;
+                head->height=temp->height;
+
                 if (is_salary) {
                     head->id = temp->element->salary;
                 } else
@@ -455,6 +469,7 @@ tree<Element> *deleteElementRecursively(tree<Element> *head, Element *e, bool is
             }
 
             delete temp;
+
             if (head != nullptr) {
                 head->left = nullptr;
                 head->right = nullptr;
