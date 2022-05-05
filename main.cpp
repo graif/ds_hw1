@@ -153,7 +153,7 @@ static OnFuncPtr OnCmdPtrs[] = {
 /***************************************************************************/
 /* main                                                                    */
 /***************************************************************************/
-
+/*
 int main(int argc, const char**argv) {
     char buffer[MAX_STRING_INPUT_SIZE];
 
@@ -165,13 +165,17 @@ int main(int argc, const char**argv) {
     };
     return 0;
 }
-
-/*int main(int argc, const char**argv) {
+*/
+int main(int argc, const char**argv) {
     void* ds= Init();
     AddCompany(ds,1, 1);
     AddCompany(ds,2, 20);
+    AddEmployee(ds,2,2,15,1);
+    AcquireCompany(ds,2,1,1.00);
+    Quit(&ds);
+
+  /*  AddCompany(ds,4, 11);
     AddCompany(ds,3, 560);
-    AddCompany(ds,4, 11);
     AddCompany(ds,5, 36);
     AddEmployee(ds,1,2,10,1);
     AddEmployee(ds,2,2,15,1);
@@ -219,7 +223,7 @@ int main(int argc, const char**argv) {
     RemoveEmployee(ds, 14);
     RemoveEmployee(ds, 7);
 
-    /*RemoveEmployee(ds,1);
+    RemoveEmployee(ds,1);
     RemoveEmployee(ds,2);
     RemoveEmployee(ds,3);
     RemoveEmployee(ds,55);
@@ -261,8 +265,8 @@ int main(int argc, const char**argv) {
     //HireEmployee(ds,2,1);
     int* employees;
     GetHighestEarnerInEachCompany(ds,4,&employees);*/
-    /*return 0;
-}*/
+    return 0;
+}
 
 /***************************************************************************/
 /* Command Checker                                                         */

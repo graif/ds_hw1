@@ -441,16 +441,18 @@ tree<Element> *deleteElementRecursively(tree<Element> *head, Element *e, bool is
                 //make sure that we don't have memory leak at that point, shared ptr suppose to free
                 temp = head;
                 head = nullptr;
+                if(is_deep_delete)
+                    delete temp->element;
             } else {
                 temp = head->left ? head->left : head->right;
+                if(is_deep_delete)
+                    delete head->element;
                 head->element = temp->element;
                 if (is_salary) {
                     head->id = temp->element->salary;
                 } else
                     head->id = temp->id;
             }
-            if(is_deep_delete&&temp!= nullptr)
-                delete temp->element;
 
             delete temp;
             if (head != nullptr) {
