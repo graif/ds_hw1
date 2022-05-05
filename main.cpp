@@ -168,10 +168,10 @@ int main(int argc, const char**argv) {
 */
 int main(int argc, const char**argv) {
     void* ds= Init();
-    AddCompany(ds,1, 1);
-    AddCompany(ds,2, 20);
+    AddCompany(ds,1, 20);
+    AddCompany(ds,2, 1);
     AddEmployee(ds,2,2,15,1);
-    AcquireCompany(ds,2,1,1.00);
+    AcquireCompany(ds,1,2,1.00);
     Quit(&ds);
 
   /*  AddCompany(ds,4, 11);

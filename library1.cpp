@@ -643,7 +643,7 @@ StatusType AcquireCompany(void *DS, int AcquirerID, int TargetID, double Factor)
         Employee *temp_highest_earner = Acquirer->element->highest_earner_employee;
 
         if (Target->element->employees_pointers != nullptr) {
-
+             if(Acquirer->element->highest_earner_employee!= nullptr){
             if (Target->element->highest_earner_employee->salary >=
                 Acquirer->element->highest_earner_employee->salary) {
                 if (Target->element->highest_earner_employee->salary ==
@@ -655,6 +655,9 @@ StatusType AcquireCompany(void *DS, int AcquirerID, int TargetID, double Factor)
                     temp_highest_earner = Target->element->highest_earner_employee;
                 }
             }
+        } else
+                 temp_highest_earner = Target->element->highest_earner_employee;
+
             int temp_emp_count = Acquirer->element->employee_count + Target->element->employee_count;
 
             StatusType status = FAILURE; // not really used
