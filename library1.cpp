@@ -13,7 +13,7 @@ class DataStrcture {
 public:
     DataStrcture() = default;
 
-    ~DataStrcture(){};
+    ~DataStrcture() {};
 
     int employee_count;
     tree<Company> *company_head;
@@ -109,7 +109,7 @@ Employee *UpdateHighestEarner(tree<Employee> *c) {
 
 StatusType AddEmployee_C(void *DS, int EmployeeID, Company *c, int Salary, int Grade) {
 
-      //  Employee *e = new Employee(EmployeeID, c, Salary, Grade);
+    //  Employee *e = new Employee(EmployeeID, c, Salary, Grade);
     if ((DS == nullptr) || (EmployeeID <= 0) || (c->id <= 0) || (Salary <= 0) || (Grade < 0)) {
         return INVALID_INPUT;
     }
@@ -221,7 +221,7 @@ StatusType RemoveCompany(void *DS, int CompanyID) {
         if (c == nullptr || c->element->employees_pointers != nullptr)
             return FAILURE; // company doesn't exist, nowhere to add employee
         StatusType status = FAILURE;
-        tree<Company> *temp = ((DataStrcture *) DS)->company_head->eraseElement(c->element, false,true, &status);
+        tree<Company> *temp = eraseElement( ((DataStrcture *) DS)->company_head,c->element, false, true, &status);
         if (status != SUCCESS) {
             return status;
         }
@@ -250,14 +250,15 @@ StatusType RemoveEmployee(void *DS, int EmployeeID) {
         Company *c = e->element->company;
         StatusType status = FAILURE;
         //delete emp pntr by salary DS
-        tree<Employee> *temp = ((DataStrcture *) DS)->employees_pointers_by_salary->eraseElement(ele, true,false, &status);
+        tree<Employee> *temp = eraseElement(((DataStrcture *) DS)->employees_pointers_by_salary,ele
+                                            , true, false,&status);
         if (status != SUCCESS) {
             return status;
         }
         ((DataStrcture *) DS)->employees_pointers_by_salary = temp;
 
         //delete emp pntr Company
-        temp = c->employees_pointers->eraseElement(ele, false,false, &status);
+        temp = eraseElement(c->employees_pointers, ele, false, false, &status);
 
         if (status != SUCCESS) {
             return status;
@@ -265,7 +266,7 @@ StatusType RemoveEmployee(void *DS, int EmployeeID) {
         c->employees_pointers = temp;
 
         //delete emp pntr by salary Company
-        temp = c->employees_pointers_by_salary->eraseElement(ele, true,false, &status);
+        temp = eraseElement(c->employees_pointers_by_salary, ele, true, false, &status);
 
         if (status != SUCCESS) {
             return status;
@@ -273,7 +274,7 @@ StatusType RemoveEmployee(void *DS, int EmployeeID) {
         c->employees_pointers_by_salary = temp;
 
         //delete emp pntr DS
-        temp = ((DataStrcture *) DS)->employee_head->eraseElement(ele, false,false, &status);
+        temp = eraseElement(((DataStrcture *) DS)->employee_head,ele, false, false, &status);
         if (status != SUCCESS) {
             return status;
         }
@@ -400,18 +401,18 @@ StatusType HireEmployee(void *DS, int EmployeeID, int NewCompanyID) {
     }
 }
 
-void printEmployees(Employee** employees, int size) {
+void printEmployees(Employee **employees, int size) {
     std::cout << "[";
-    for(int i = 0; i < size; i++) {
+    for (int i = 0; i < size; i++) {
         std::cout << (employees[i])->id << ",";
     }
     std::cout << "]" << std::endl;
 }
 
-void printEmployeesSalary(Employee** employees, int size) {
+void printEmployeesSalary(Employee **employees, int size) {
     std::cout << "printingEmployeesSalary:" << std::endl;
     std::cout << "[";
-    for(int i = 0; i < size; i++) {
+    for (int i = 0; i < size; i++) {
         std::cout << (employees[i])->salary << ",";
     }
     std::cout << "]" << std::endl;
@@ -439,7 +440,8 @@ tree<Employee> *arrayToTree(Employee **array, int begin, int end, bool isSalary)
 }
 
 tree<Employee> *
-CombineTree(Company * comp, tree<Employee> *head1, tree<Employee> *head2, int size1, int size2, StatusType *status, bool isSalary) {
+CombineTree(Company *comp, tree<Employee> *head1, tree<Employee> *head2, int size1, int size2, StatusType *status,
+            bool isSalary) {
 
 
     Employee **tree1 = new Employee *[size1];
@@ -535,11 +537,11 @@ CombineTree(Company * comp, tree<Employee> *head1, tree<Employee> *head2, int si
     /*for (int i = 0; i < size2; i++) {
         delete tree2[i];
     }*/
-    delete [] tree2;
+    delete[] tree2;
     /*for (int i = 0; i < size1 + size2; i++) {
         delete merged[i];
     }*/
-    delete [] merged;
+    delete[] merged;
 
     return new_head;
 
@@ -558,10 +560,10 @@ StatusType AcquireCompany(void *DS, int AcquirerID, int TargetID, double Factor)
         if (Acquirer == nullptr || Target == nullptr || Acquirer->element->value < (10 * Target->element->value)) {
             return FAILURE;
         }
-        Company* Acquirer_c=Acquirer->element;
-        Company* Target_c=Target->element;
+        Company *Acquirer_c = Acquirer->element;
+        Company *Target_c = Target->element;
 
-        if(AcquirerID == 321 && TargetID == 330) {
+        if (AcquirerID == 321 && TargetID == 330) {
             int hi = 5;
         }
 
@@ -589,26 +591,27 @@ StatusType AcquireCompany(void *DS, int AcquirerID, int TargetID, double Factor)
             int temp_emp_count = Acquirer->element->employee_count + Target->element->employee_count;
 
             StatusType status = FAILURE; // not really used
-            tree<Employee> *merged_emp_ptr = CombineTree(Acquirer->element,Acquirer->element->employees_pointers,
+            tree<Employee> *merged_emp_ptr = CombineTree(Acquirer->element, Acquirer->element->employees_pointers,
                                                          Target->element->employees_pointers,
                                                          Acquirer->element->employee_count,
                                                          Target->element->employee_count, &status, false);
 
-            Target_c->employees_pointers= nullptr;
+            Target_c->employees_pointers = nullptr;
             Acquirer_c->employees_pointers = merged_emp_ptr;
 
             tree<Employee> *merged_emp_salary = CombineTree
-                    (Acquirer_c,Acquirer_c->employees_pointers_by_salary, Target_c->employees_pointers_by_salary,
+                    (Acquirer_c, Acquirer_c->employees_pointers_by_salary, Target_c->employees_pointers_by_salary,
                      Acquirer_c->employee_count, Target_c->employee_count, &status, true);
 
-            Target_c->employees_pointers_by_salary= nullptr;
+            Target_c->employees_pointers_by_salary = nullptr;
             Acquirer_c->employees_pointers_by_salary = merged_emp_salary;
             Acquirer_c->highest_earner_employee = temp_highest_earner;
             Acquirer_c->employee_count = temp_emp_count;
-        }
-        else {
-            StatusType status = RemoveCompany(DS,TargetID);
-            if(status != SUCCESS) return status;
+            ((DataStrcture *) DS)->company_head = eraseElement(((DataStrcture *) DS)->company_head, Target_c, false, false, &status);
+            delete Target_c;
+        } else {
+            StatusType status = RemoveCompany(DS, TargetID);
+            if (status != SUCCESS) return status;
 
         }
         Acquirer_c->value = temp_val;
@@ -911,11 +914,11 @@ void Quit(void **DS) {
 */
 
 
-void Quit_Helper(void *DS, tree<Company>* &curr) {
-    if(curr == nullptr) return;
+void Quit_Helper(void *DS, tree<Company> *&curr) {
+    if (curr == nullptr) return;
 
     Quit_Helper(DS, curr->left);
-    curr->left= nullptr;
+    curr->left = nullptr;
     Quit_Helper(DS, curr->right);
 
     clear(curr->element->employees_pointers_by_salary);
@@ -928,9 +931,9 @@ void Quit_Helper(void *DS, tree<Company>* &curr) {
 }
 
 void Quit(void **DS) {
-    DataStrcture* DSS=((DataStrcture*)*DS);
-    tree<Company>* &c = DSS->company_head;
-    Quit_Helper(DSS,c);
+    DataStrcture *DSS = ((DataStrcture *) *DS);
+    tree<Company> *&c = DSS->company_head;
+    Quit_Helper(DSS, c);
     DSS->company_head = nullptr;
     clear(DSS->employees_pointers_by_salary);
     DSS->employees_pointers_by_salary = nullptr;
