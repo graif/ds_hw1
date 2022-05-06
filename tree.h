@@ -7,7 +7,6 @@
 
 #include <memory>
 #include "library1.h"
-#include <algorithm>
 
 class Company;
 
@@ -442,7 +441,6 @@ tree<Element> *deleteElementRecursively(tree<Element> *head, Element *e, bool is
     int a = getHeight(head->left);
     int c = getHeight(head->right);
     head->height = (a > c ? a : c) + 1;
-    //head->height = getMax(getHeight(head->left), getHeight(head->right)) +1;// valgrind error (getMax defined multiple times)
     int b = getBalance(head);;
 
     // LL
