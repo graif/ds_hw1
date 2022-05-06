@@ -863,7 +863,7 @@ StatusType GetHighestEarnerInEachCompany(void *DS, int NumOfCompanies, int **Emp
         Company **companies = new Company *[NumOfCompanies];
         int counter = 0;
 
-        tree<Company> *c = ((DataStrcture *) DS)->company_head;
+        tree<Company> *c = ((DataStrcture *) DS)->companies_with_employees;
         StatusType result = GetHighestEarnerInEachCompany_helper(DS, NumOfCompanies, c, companies, &counter);
         if (result != SUCCESS) {
             delete[] companies;
