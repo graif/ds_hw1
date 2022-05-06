@@ -8,7 +8,6 @@
 #include <memory>
 #include "library1.h"
 #include <algorithm>
-#include <iostream>
 
 class Company;
 
