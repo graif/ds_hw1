@@ -16,6 +16,7 @@ public:
 
     int employee_count;
     tree<Company> *company_head;
+    tree<Company> *companies_with_employees;
     tree<Employee> *employee_head;
     Employee *highest_earner_employee;
     tree<Employee> *employees_pointers_by_salary;
@@ -32,6 +33,7 @@ void *Init() {
         DataStrcture *DS = new DataStrcture();
         DS->highest_earner_employee = nullptr;
         DS->company_head = nullptr;
+        DS->companies_with_employees = nullptr;
         DS->employee_head = nullptr;
         return (void *) DS;
 
@@ -72,6 +74,20 @@ StatusType AddCompany(void *DS, int CompanyID, int Value) {
             if (((DataStrcture *) DS)->company_head->id != temp->id) {
                 ((DataStrcture *) DS)->company_head = temp; //valgrind segfault cause
                 //((DataStrcture *) DS)->company_head.get() = temp;
+            }
+        }
+
+        if (((DataStrcture *) DS)->companies_with_employees == nullptr) {
+            ((DataStrcture *) DS)->companies_with_employees = new tree<Company>(CompanyID, c);
+        } else {
+            StatusType status = FAILURE;
+            tree<Company> *temp = addElement(DSS->companies_with_employees, c, c->id, false, &status); //valgrind segfault cause
+            if (status != SUCCESS) {
+                delete c;
+                return status;
+            }
+            if (((DataStrcture *) DS)->companies_with_employees->id != temp->id) {
+                ((DataStrcture *) DS)->companies_with_employees = temp;
             }
         }
         return SUCCESS;
@@ -148,6 +164,22 @@ StatusType AddEmployee_C(void *DS, int EmployeeID, Company *c, int Salary, int G
         if (c->employees_pointers == nullptr) {
             tree<Employee> *ba = new tree<Employee>(EmployeeID, t->element);
             c->employees_pointers = ba;
+
+            /// adding company to the list of companies with employees
+            if (((DataStrcture *) DS)->companies_with_employees == nullptr) {
+                ((DataStrcture *) DS)->companies_with_employees = new tree<Company>(c->id, c);
+            } else {
+                StatusType status = FAILURE;
+                tree<Company> *temp = addElement(DSS->companies_with_employees, c, c->id, false, &status);
+                if (status != SUCCESS) {
+                    delete c;
+                    return status;
+                }
+                if (((DataStrcture *) DS)->companies_with_employees->id != temp->id) {
+                    ((DataStrcture *) DS)->companies_with_employees = temp;
+                }
+            }
+
         } else {
             StatusType status = FAILURE;
             tree<Employee> *temp = addElement(c->employees_pointers, t->element, EmployeeID, false, &status);
@@ -236,6 +268,7 @@ StatusType RemoveCompany(void *DS, int CompanyID) {
         tree<Company> *c = findById(((DataStrcture *) DS)->company_head, CompanyID);
         if (c == nullptr || c->element->employees_pointers != nullptr)
             return FAILURE; // company doesn't exist, nowhere to add employee
+
         StatusType status = FAILURE;
         tree<Company> *temp = eraseElement( ((DataStrcture *) DS)->company_head,c->element, false, true, &status);
         if (status != SUCCESS) {
@@ -310,6 +343,21 @@ StatusType RemoveEmployee(void *DS, int EmployeeID) {
         ((DataStrcture *) DS)->highest_earner_employee = UpdateHighestEarner(
                 ((DataStrcture *) DS)->employees_pointers_by_salary);
         c->highest_earner_employee = UpdateHighestEarner(c->employees_pointers_by_salary);
+
+        /// if we removed the last employee, the company needs to be removed from the list of companies with employees
+        if(c->employee_count == 0) {
+            tree<Company> *c2 = findById(((DataStrcture *) DS)->companies_with_employees, c->id);
+            if (c2 == nullptr)
+                return FAILURE; // company doesn't exist
+
+            StatusType status = FAILURE;
+            tree<Company> *temp = eraseElement( ((DataStrcture *) DS)->companies_with_employees,c2->element, false, false, &status);
+            if (status != SUCCESS) {
+                return status;
+            }
+            ((DataStrcture *) DS)->companies_with_employees = temp;
+        }
+
         delete ele;
         return SUCCESS;
     }
@@ -638,7 +686,23 @@ StatusType AcquireCompany(void *DS, int AcquirerID, int TargetID, double Factor)
             Acquirer_c->highest_earner_employee = temp_highest_earner;
             Acquirer_c->employee_count = temp_emp_count;
             ((DataStrcture *) DS)->company_head = eraseElement(((DataStrcture *) DS)->company_head, Target_c, false, false, &status);
+
+            /// remove both companies from companies with employees
+            ((DataStrcture *) DS)->companies_with_employees = eraseElement(((DataStrcture *) DS)->companies_with_employees, Target_c, false, false, &status);
+            ((DataStrcture *) DS)->companies_with_employees = eraseElement(((DataStrcture *) DS)->companies_with_employees, Acquirer_c, false, false, &status);
+            /// add merged company to companies with employees
+            if (((DataStrcture *) DS)->companies_with_employees == nullptr) {
+                ((DataStrcture *) DS)->companies_with_employees = new tree<Company>(AcquirerID, Acquirer_c);
+            } else {
+                status = FAILURE;
+                tree<Company> *temp = addElement(((DataStrcture *) DS)->companies_with_employees, Acquirer_c, AcquirerID, false, &status); //valgrind segfault cause
+                if (((DataStrcture *) DS)->companies_with_employees->id != temp->id) {
+                    ((DataStrcture *) DS)->companies_with_employees = temp;
+                }
+            }
+
             delete Target_c;
+
         } else {
             StatusType status = RemoveCompany(DS, TargetID);
             if (status != SUCCESS) return status;
@@ -646,7 +710,6 @@ StatusType AcquireCompany(void *DS, int AcquirerID, int TargetID, double Factor)
         }
         Acquirer = findById(((DataStrcture *) DS)->company_head, AcquirerID);
         Acquirer->element->value = temp_val;
-
 
         return SUCCESS;
     }
@@ -946,12 +1009,14 @@ void Quit_Helper(void *DS, tree<Company> *&curr) {
 void Quit(void **DS) {
     DataStrcture *DSS = ((DataStrcture *) *DS);
     tree<Company> *&c = DSS->company_head;
+    clear(DSS->companies_with_employees);
     Quit_Helper(DSS, c);
     DSS->company_head = nullptr;
     clear(DSS->employees_pointers_by_salary);
     DSS->employees_pointers_by_salary = nullptr;
     clearAll(DSS->employee_head);
     DSS->employee_head = nullptr;
+    DSS->companies_with_employees = nullptr;
     DSS->highest_earner_employee = nullptr;
     delete DSS;
     *DS = nullptr;
