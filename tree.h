@@ -451,11 +451,13 @@ tree<Element> *deleteElementRecursively(tree<Element> *head, Element *e, bool is
                 if(is_deep_delete){
                     delete temp->element;
                     temp->element= nullptr;
+                    is_deep_delete= false;
                 }
             } else {
                 temp = head->left ? head->left : head->right;
                 if(is_deep_delete){
                     delete head->element;
+                    is_deep_delete= false;
                 }
                 head->element = temp->element;
                 head->left=temp->left;
@@ -479,6 +481,10 @@ tree<Element> *deleteElementRecursively(tree<Element> *head, Element *e, bool is
             if (temp != nullptr) {
                 while (temp->left != nullptr) {
                     temp = temp->left;
+                }
+                if(is_deep_delete){
+                    delete head->element;
+                    is_deep_delete=false;
                 }
 
                 head->element = temp->element;

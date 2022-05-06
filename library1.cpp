@@ -141,7 +141,7 @@ StatusType AddEmployee_C(void *DS, int EmployeeID, Company *c, int Salary, int G
         tree<Employee> *t = findById(((DataStrcture *) DS)->employee_head, EmployeeID);
 
         if (t == nullptr) {
-            std::cout << "t is null for some stupid reason (EmployeeID: " << EmployeeID << ")" << std::endl;
+         //   std::cout << "t is null for some stupid reason (EmployeeID: " << EmployeeID << ")" << std::endl;
             delete e;
             return FAILURE;
         }
@@ -511,7 +511,7 @@ CombineTree(Company *comp, tree<Employee> *head1, tree<Employee> *head2, int siz
         k++;
     }
 
-    std::cout << "size1: " << size1 << " index1: " << i << " size2: " << size2 << " index2: " << j << std::endl;
+    //std::cout << "size1: " << size1 << " index1: " << i << " size2: " << size2 << " index2: " << j << std::endl;
     while (j < size2) {
         merged[k] = tree2[j]; // tree1[j] invalid read
         merged[k]->company = comp;  // tree1[j]->company invalid write
@@ -614,7 +614,8 @@ StatusType AcquireCompany(void *DS, int AcquirerID, int TargetID, double Factor)
             if (status != SUCCESS) return status;
 
         }
-        Acquirer_c->value = temp_val;
+        Acquirer = findById(((DataStrcture *) DS)->company_head, AcquirerID);
+        Acquirer->element->value = temp_val;
 
 
         return SUCCESS;
