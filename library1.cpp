@@ -77,19 +77,6 @@ StatusType AddCompany(void *DS, int CompanyID, int Value) {
             }
         }
 
-        if (((DataStrcture *) DS)->companies_with_employees == nullptr) {
-            ((DataStrcture *) DS)->companies_with_employees = new tree<Company>(CompanyID, c);
-        } else {
-            StatusType status = FAILURE;
-            tree<Company> *temp = addElement(DSS->companies_with_employees, c, c->id, false, &status); //valgrind segfault cause
-            if (status != SUCCESS) {
-                delete c;
-                return status;
-            }
-            if (((DataStrcture *) DS)->companies_with_employees->id != temp->id) {
-                ((DataStrcture *) DS)->companies_with_employees = temp;
-            }
-        }
         return SUCCESS;
     }
     catch (std::bad_alloc &) {
