@@ -900,7 +900,7 @@ StatusType GetHighestEarnerInEachCompany(void *DS, int NumOfCompanies, int **Emp
  */
 StatusType GetNumEmployeesMatching_helper(tree<Employee> *e, int MinEmployeeID, int MaxEmployeeId, int *TotalNumOfEmployees,
                                int *NumOfEmployees, int MinSalary, int MinGrade) {
-    if (e == nullptr) {
+    if (e == nullptr || e->id < MinEmployeeID || e->id > MaxEmployeeId) {
         return SUCCESS;
     }
 

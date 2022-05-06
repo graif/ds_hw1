@@ -153,7 +153,7 @@ static OnFuncPtr OnCmdPtrs[] = {
 /***************************************************************************/
 /* main                                                                    */
 /***************************************************************************/
-/*
+
 int main(int argc, const char**argv) {
     char buffer[MAX_STRING_INPUT_SIZE];
 
@@ -163,113 +163,6 @@ int main(int argc, const char**argv) {
         if (parser(buffer) == error)
             break;
     };
-    return 0;
-}
-*/
-int main(int argc, const char**argv) {
-    void* ds= Init();
-    AddCompany(ds,1, 1);
-    AddCompany(ds,2, 50);
-    AddCompany(ds,3, 10000);
-    AddEmployee(ds,11,1,15,1);
-    AddEmployee(ds,12,1,15,1);
-    AddEmployee(ds,13,1,15,1);
-    AddEmployee(ds,14,1,15,1);
-    AcquireCompany(ds,3,2,1.00);
-    Quit(&ds);
-
-
-    /*  AddCompany(ds,4, 11);
-      AddCompany(ds,3, 560);
-      AddCompany(ds,5, 36);
-      AddEmployee(ds,1,2,10,1);
-      AddEmployee(ds,2,2,15,1);
-      AddEmployee(ds,3,2,5,2);
-      AddEmployee(ds,55,2,5,2); // aya
-      AddEmployee(ds,14,2,5,2); // aya
-      AddEmployee(ds,37,2,5,2); // aya
-      AddEmployee(ds,81,2,5,2); // aya
-      AddEmployee(ds,398,2,5,2);
-      AddEmployee(ds,456,2,5,2);
-      AddEmployee(ds,223,2,5,2);
-      AddEmployee(ds,12,2,5,2);
-      AddEmployee(ds,7,2,5,2);
-      AddEmployee(ds,891,2,5,2); // aya
-      AddEmployee(ds,10893,2,5,2); // aya
-      AddEmployee(ds,29,2,5,2);
-      AddEmployee(ds,36,2,5,2);
-      AddEmployee(ds,4098,2,5,2);
-      AddEmployee(ds,167,2,5,2);
-      AddEmployee(ds,189,2,5,2);
-      AddEmployee(ds,124,2,5,2);
-      AddEmployee(ds,17,2,5,2); // aya
-      AddEmployee(ds,983,2,5,2);
-      AddEmployee(ds,3,2,5,2);
-      AddEmployee(ds,56,2,5,2); // aya
-      AddEmployee(ds,149,2,5,2);
-      AddEmployee(ds,5890,2,5,2);
-      AddEmployee(ds,35,2,5,2);
-      AddEmployee(ds,763,2,5,2);
-      AddEmployee(ds,18,2,5,2); // aya
-      int* Employees;
-      int NumOfEmployees;
-      //GetAllEmployeesBySalary(ds, 2, &Employees, &NumOfEmployees);
-
-      AddEmployee(ds,30,1,5,2);
-      AddEmployee(ds,76,1,5,2);
-      AddEmployee(ds,20,1,5,2);
-
-      RemoveEmployee(ds, 3);
-      RemoveEmployee(ds, 983);
-      RemoveEmployee(ds, 1);
-      RemoveEmployee(ds, 10893);
-      RemoveEmployee(ds, 2);
-      RemoveEmployee(ds, 55);
-      RemoveEmployee(ds, 14);
-      RemoveEmployee(ds, 7);
-
-      RemoveEmployee(ds,1);
-      RemoveEmployee(ds,2);
-      RemoveEmployee(ds,3);
-      RemoveEmployee(ds,55);
-      RemoveEmployee(ds,14);
-      RemoveEmployee(ds,37);
-      RemoveEmployee(ds,81);
-      RemoveEmployee(ds,398);
-      RemoveEmployee(ds,456);
-      RemoveEmployee(ds,223);
-      RemoveEmployee(ds,12);
-      RemoveEmployee(ds,7);
-      RemoveEmployee(ds,891);
-      RemoveEmployee(ds,10893);
-      RemoveEmployee(ds,29);
-      RemoveEmployee(ds,36);
-      RemoveEmployee(ds,4098);
-      RemoveEmployee(ds,167);
-      RemoveEmployee(ds,189);
-      RemoveEmployee(ds,124);
-      RemoveEmployee(ds,17);
-      RemoveEmployee(ds,983);
-      //RemoveEmployee(ds,3);
-      //RemoveEmployee(ds,56);
-      //RemoveEmployee(ds,149);
-      RemoveEmployee(ds,5890);
-      RemoveEmployee(ds,35);
-      RemoveEmployee(ds,763);
-      RemoveEmployee(ds,18);*/
-
-
-
-    /*AcquireCompany(ds,2,1,1.00);
-    cout << "hi" << endl;
-    /*int EmployeeID = 0;
-    GetHighestEarner(ds,2,&EmployeeID);
-    //cout << "highest earner: " << EmployeeID << endl;
-
-    RemoveEmployee(ds,5890);*//*
-    //HireEmployee(ds,2,1);
-    int* employees;
-    GetHighestEarnerInEachCompany(ds,4,&employees);*/
     return 0;
 }
 
