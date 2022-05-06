@@ -31,34 +31,6 @@ public:
         right= nullptr;
     };
 
-    /**
-     * the func add element to a tree by iterator (can be id or salary in our cases)
-     * @param e
-     * @param iterator
-     * @param status
-     * @return
-     */
-    /*tree<Element> * addElement(Element* e,int iterator,bool is_salary, StatusType* status) {
-        if(e == nullptr || iterator <= 0) {
-            *status = INVALID_INPUT;
-            return this;
-        }
-        try {
-            tree<Element> *t = new tree(iterator,e);
-
-            tree<Element>* T = addElementRecursively(this,t,iterator,is_salary, status);
-            if(*status != SUCCESS) {
-                delete t;
-                return nullptr;
-            }
-            return T;
-        }
-        catch (std::bad_alloc &) {
-            *status = ALLOCATION_ERROR;
-            return this;
-        }
-    }*/
-
 
 };
 
@@ -91,7 +63,6 @@ tree<Element>* eraseElement(tree<Element>* &head,Element *e, bool is_salary,bool
      * @tparam Element
      * @param tree
      */
-
 template<class Element>
 void clear_helper(tree<Element>* &tree) {
     if (tree == nullptr) {
@@ -106,6 +77,12 @@ void clear_helper(tree<Element>* &tree) {
     tree= nullptr;
 }
 
+/**
+ *
+ * @tparam Element
+ * @param tree
+ * @return
+ */
 template<class Element>
 tree<Element>* clear(tree<Element>* &tree) {
     if (tree == nullptr) {
@@ -121,7 +98,12 @@ tree<Element>* clear(tree<Element>* &tree) {
     return nullptr;
 }
 
-/**This Clears Elements too**/
+/**This Clears Elements too
+ *
+ * @tparam Element
+ * @param tree
+ * @return
+ */
 template<class Element>
 tree<Element>* clearAll(tree<Element>* &tree) {
     if (tree == nullptr) {
@@ -158,7 +140,6 @@ tree<Element> *addElement(tree<Element> *head, Element *e, int iterator, bool is
         tree<Element> *T = addElementRecursively(head, t, iterator, is_salary, status);
         if (*status != SUCCESS) {
             delete t;
-            t= nullptr;
             return nullptr;
         }
         return T;
@@ -183,6 +164,12 @@ int getHeight(tree<Element> *head) {
     return head->height;
 }
 
+/**
+ *
+ * @tparam Element
+ * @param head
+ * @return
+ */
 template<class Element>
 int getBalance(tree<Element> *head) {
     if (head == nullptr)
@@ -190,36 +177,6 @@ int getBalance(tree<Element> *head) {
     return (getHeight(head->left) - getHeight(head->right));
 }
 
-/*int getMax(int a, int b) {
-    return a > b ? a : b;
-}*/
-
-/**
- * the func get a tree and a element and return pointer for the daddy node of the element. if not found
- * the func return nullptr
- * @tparam Element
- * @param head
- * @param id
- * @return
- */
-template<class Element>
-tree<Element> *findMyDaddy(tree<Element> *head, int id) {
-    if (head == nullptr) { // no head, employee is the new head
-        return nullptr;
-    } else {
-        if (head->id > id) {
-            if (head->left == nullptr) {
-                return head;
-            }
-            return findMyDaddy(head->left, id);
-        } else {
-            if (head->right == nullptr) {
-                return head;
-            }
-            return findMyDaddy(head->right, id);
-        }
-    }
-}
 
 /**
  *  the func get a tree and id and return the node  of the element. if not found
@@ -245,15 +202,20 @@ tree<Element> *findById(tree<Element> *head, int id) {
 }
 
 /*******************************************   rotate functions   ***********************************************************/
+
+/**
+ * Lrot
+ *
+ * @tparam Element
+ * @param head
+ * @return
+ */
 template<class Element>
 tree<Element> *left_rot(tree<Element> *head) {
     tree<Element> *temp1 = head->right;
     tree<Element> *temp2 = temp1->left;
     temp1->left = head;
     head->right = temp2;
-
-    //head->height = getMax(getHeight(head->left),getHeight(head->right))+1;
-    //temp1->height = getMax(getHeight(temp1->left),getHeight(temp1->right))+1;
     int a = getHeight(head->left);
     int b = getHeight(head->right);
     head->height = (a > b ? a : b) + 1;
@@ -265,15 +227,18 @@ tree<Element> *left_rot(tree<Element> *head) {
     return temp1;
 }
 
+/**
+ * Rrot
+ * @tparam Element
+ * @param head
+ * @return
+ */
 template<class Element>
 tree<Element> *right_rot(tree<Element> *head) {
     tree<Element> *temp1 = head->left;
     tree<Element> *temp2 = temp1->right;
     temp1->right = head;
     head->left = temp2;
-
-    //head->height=getMax(getHeight(head->left),getHeight(head->right))+1;
-    //temp1->height=getMax(getHeight(temp1->left),getHeight(temp1->right))+1;
     int a = getHeight(head->left);
     int b = getHeight(head->right);
     head->height = (a > b ? a : b) + 1;
@@ -284,9 +249,17 @@ tree<Element> *right_rot(tree<Element> *head) {
     return temp1;
 }
 
-
+/**
+ *
+ * @tparam Element
+ * @param head
+ * @param element_tree
+ * @param iterator
+ * @param is_salary
+ * @param status
+ * @return
+ */
 template<class Element>
-//not sure if it cover case of inserting element that will be head
 tree<Element> *addElementRecursively(tree<Element> *head, tree<Element> *element_tree, int iterator, bool is_salary,
                                      StatusType *status) {
     if (head == nullptr) {
@@ -312,47 +285,12 @@ tree<Element> *addElementRecursively(tree<Element> *head, tree<Element> *element
             return head; // possibly element_tree
         }
 
-       /* *status = SUCCESS;
-        int a = getHeight(head->left);
-        int c = getHeight(head->right);
-        head->height = (a > c ? a : c) + 1;
-        //head->height = getMax(getHeight(head->left), getHeight(head->right)) +1;
-        int b = getBalance(head);
-
-        // LL
-        if (head->left != nullptr && (b > 1 && (element_tree->element->id > head->left->element->id))) {
-            return right_rot<Element>(head);
-        }
-
-        // RR
-        if (head->right != nullptr && (b < -1 && (element_tree->element->id < head->right->element->id))) {
-            return left_rot<Element>(head);
-        }
-
-        // LR
-        if (head->left != nullptr && head->left->right != nullptr &&
-            (b > 1 && (element_tree->element->id < head->left->element->id))) {
-            head->left = left_rot<Element>(head->left);
-            return right_rot<Element>(head);
-        }
-
-        // RL
-        if (head->right != nullptr && head->right->left != nullptr &&
-            (b < -1 && (element_tree->element->id > head->right->element->id))) {
-            head->right = right_rot<Element>(head->right);
-            return left_rot<Element>(head);
-        }
-
-        // do nothing:
-        return head;*/
-
     }
 
     *status = SUCCESS;
     int a = getHeight(head->left);
     int c = getHeight(head->right);
     head->height = (a > c ? a : c) + 1;
-    //head->height = getMax(getHeight(head->left), getHeight(head->right)) +1;
     int b = getBalance(head);
 
     // LL
@@ -401,7 +339,7 @@ tree<Element> *addElementRecursively(tree<Element> *head, tree<Element> *element
         }
     }
 
-    // do nothing:
+    //  do nothing
     return head;
 }
 
@@ -441,7 +379,7 @@ tree<Element> *deleteElementRecursively(tree<Element> *head, Element *e, bool is
         //found the element to be deleted
     else {
 
-        //case of 1/0 child
+        //case of 1-0 child
         tree<Element> *temp= nullptr;
         if (head->left == nullptr || head->right == nullptr) {
             if (head->left == nullptr && head->right == nullptr) {
@@ -451,13 +389,11 @@ tree<Element> *deleteElementRecursively(tree<Element> *head, Element *e, bool is
                 if(is_deep_delete){
                     delete temp->element;
                     temp->element= nullptr;
-                    is_deep_delete= false;
                 }
             } else {
                 temp = head->left ? head->left : head->right;
                 if(is_deep_delete){
                     delete head->element;
-                    is_deep_delete= false;
                 }
                 head->element = temp->element;
                 head->left=temp->left;
@@ -532,16 +468,19 @@ tree<Element> *deleteElementRecursively(tree<Element> *head, Element *e, bool is
         return left_rot<Element>(head);
     }
 
-
     // do nothing:
     return head;
 
 }
 
 
-
-
-//the func also delete the old values
+/**
+ * the func also delete the old values
+ * @tparam Element
+ * @param head
+ * @param dest
+ * @param index
+ */
 template<class Element>
 void treeToArray(tree<Element> *head, Element **dest, int *index) {
     if (head == nullptr) {
@@ -549,101 +488,9 @@ void treeToArray(tree<Element> *head, Element **dest, int *index) {
     }
     treeToArray(head->left, dest, index);
     dest[*index] = head->element;
-    //head->element = nullptr;
     (*index)++;
     treeToArray(head->right, dest, index);
-    //delete head;
-    //head = nullptr;
-}
-
-/**
-template<class Element>
-tree<Element> *CombineTree(tree<Element> *head1, tree<Element> *head2, int size1, int size2, StatusType *status, bool isSalary) {
-    try {
-        Element **tree1 = new Element *[size1];
-        Element **tree2 = new Element *[size2];
-        int index = 0;
-        treeToArray<Element>(head1, tree1, &index);
-        int index2 = 0;
-        treeToArray<Element>(head2, tree2, &index2);
-
-        std::cout << "size1: " << size1 << " index1: " << index << " size2: " << size2 << " index2: " << index2 << std::endl;
-        index = 0;
-        index2 = 0;
-
-        Element **merged = new Element *[size1 + size2];
-
-        int i = 0, j = 0, k = 0;
-        while ((i < size1) && (j < size2)) {
-            if(!isSalary) {
-                if (tree1[i]->id > tree2[j]->id) {
-                    merged[k] = tree2[j];
-                    j++;
-                } else {
-                    merged[k] = tree1[i];
-                    i++;
-                }
-            }
-            else {
-                std::cout << "k: " << k << std::endl;
-
-                std::cout << "tree1[0]->salary: " << (int)(tree1[0]->salary) << std::endl;
-                std::cout << "tree2[0]->salary: " << (int)(tree2[0]->salary) << std::endl;
-                std::cout << "tree1[0]->id: " << tree1[0]->id << std::endl;
-                std::cout << "tree2[0]->id: " << tree2[0]->id << std::endl;
-                if (tree1[i]->salary > tree2[j]->salary) { // problem
-                    merged[k] = tree2[j];
-                    j++;
-                } else if (tree1[i]->salary < tree2[j]->salary){
-                    merged[k] = tree1[i];
-                    i++;
-                }
-                else { // equal
-                    if (tree1[i]->id < tree2[j]->id) {
-                        merged[k] = tree2[j];
-                        j++;
-                    } else {
-                        merged[k] = tree1[i];
-                        i++;
-                    }
-                }
-            }
-            k++;
-        }
-        while (j < size2) {
-            merged[k] = tree1[j];
-            k++;
-            j++;
-        }
-        while (i < size1) {
-            merged[k] = tree1[i];
-            k++;
-            i++;
-        }
-
-
-        tree<Element> *new_head = arrayToTree<Element>(merged, 0, size2 + size1 - 1);
-
-        for (int i = 0; i < size1; i++) {
-            delete tree1[i];
-        }
-        delete[] tree1;
-        for (int i = 0; i < size2; i++) {
-            delete tree2[i];
-        }
-        delete[] tree2;
-
-        delete[] merged;
-
-        return new_head;
-
-    }
-    catch (std::bad_alloc &) {
-        *status = ALLOCATION_ERROR;
-        return nullptr;
-    }
 
 }
-**/
 
 #endif //DS_HW1_TREE_H

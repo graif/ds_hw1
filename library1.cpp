@@ -3,7 +3,6 @@
 //
 
 #include <memory>
-#include <iostream>
 #include "library1.h"
 #include "Company.h"
 #include "Employee.h"
@@ -23,10 +22,10 @@ public:
 };
 
 
-/*** Eden's notes 30/APR/2022
- * Make sure we are updating the highest earners both in company and in general
- * */
-
+/**
+ * O(1)
+ * @return
+ */
 void *Init() {
 
     try {
@@ -42,6 +41,14 @@ void *Init() {
     }
 }
 
+/**
+ * the func add a company to DB
+ * O(log(K)) - k num of companies
+ * @param DS
+ * @param CompanyID
+ * @param Value
+ * @return
+ */
 StatusType AddCompany(void *DS, int CompanyID, int Value) {
     Company *c;
     try {
@@ -75,28 +82,11 @@ StatusType AddCompany(void *DS, int CompanyID, int Value) {
     }
 }
 
-/*void UpdateHighestEarner(DataStrcture *DS, Employee *e) {
-    if(DS == nullptr || e == nullptr) return;
-    // if no highest earner currently exists
-    // or if current highest earner, earns less than our employee
-    // or if he earns exactly the same as our employee
-    // but also has a higher employee ID
-    if (DS->highest_earner_employee == nullptr || DS->highest_earner_employee->salary < e->salary ||
-        (DS->highest_earner_employee->salary == e->salary &&
-         DS->highest_earner_employee->id > e->id)) {
-        DS->highest_earner_employee = e;
-    }
-}*/
 /**
-void UpdateCompanyHighestEarner(Company *c, Employee *e) {
-    if(c == nullptr || e == nullptr) return;
-    // same as above but for the highest earner for the specific company
-    if (c->highest_earner_employee == nullptr || c->highest_earner_employee->salary < e->salary ||
-        (c->highest_earner_employee->salary == e->salary && c->highest_earner_employee->id > e->id)) {
-        c->highest_earner_employee = e;
-    } // valgrind invalid read of size 8 (pointer)
-}
-**/
+ * O(log(n)) - n num of employees
+ * @param c
+ * @return
+ */
 Employee *UpdateHighestEarner(tree<Employee> *c) {
     if (c == nullptr)
         return nullptr;
@@ -107,9 +97,18 @@ Employee *UpdateHighestEarner(tree<Employee> *c) {
     return c->element;
 }
 
+/**
+ * the func add an employee to DS (use when have Company pointer)
+ * O(log(n)) - n num pf employees
+ * @param DS
+ * @param EmployeeID
+ * @param c
+ * @param Salary
+ * @param Grade
+ * @return
+ */
 StatusType AddEmployee_C(void *DS, int EmployeeID, Company *c, int Salary, int Grade) {
 
-    //  Employee *e = new Employee(EmployeeID, c, Salary, Grade);
     if ((DS == nullptr) || (EmployeeID <= 0) || (c->id <= 0) || (Salary <= 0) || (Grade < 0)) {
         return INVALID_INPUT;
     }
@@ -196,7 +195,16 @@ StatusType AddEmployee_C(void *DS, int EmployeeID, Company *c, int Salary, int G
     }
 }
 
-
+/**
+ * the func add an employee to DS (use when dint have Company pointer)
+ * O(log(n)+log(k)) - n num of employees,k num of companies
+ * @param DS
+ * @param EmployeeID
+ * @param CompanyID
+ * @param Salary
+ * @param Grade
+ * @return
+ */
 StatusType AddEmployee(void *DS, int EmployeeID, int CompanyID, int Salary, int Grade) {
     if ((DS == nullptr) || (EmployeeID <= 0) || (CompanyID <= 0) || (Salary <= 0) || (Grade < 0)) {
         return INVALID_INPUT;
@@ -212,6 +220,14 @@ StatusType AddEmployee(void *DS, int EmployeeID, int CompanyID, int Salary, int 
 
 }
 
+/**
+ *
+ * the func add an company to DS
+ * O(log(k)) - k num of companies
+ * @param DS
+ * @param CompanyID
+ * @return
+ */
 StatusType RemoveCompany(void *DS, int CompanyID) {
     try {
         if (CompanyID <= 0 || DS == nullptr) {
@@ -236,13 +252,19 @@ StatusType RemoveCompany(void *DS, int CompanyID) {
 
 }
 
-
+/**
+ *
+ * the func remove an employee from DS
+ * O(log(n)) - n num pf employees
+ * @param DS
+ * @param EmployeeID
+ * @return
+ */
 StatusType RemoveEmployee(void *DS, int EmployeeID) {
     try {
         if (EmployeeID <= 0 || DS == nullptr) {
             return INVALID_INPUT;
         }
-        //DataStrcture *DSS = (DataStrcture *) DS;
 
         tree<Employee> *e = findById(((DataStrcture *) DS)->employee_head, EmployeeID);
         if (e == nullptr || e->element == nullptr) return FAILURE; // company doesn't exist, nowhere to add employee
@@ -285,19 +307,6 @@ StatusType RemoveEmployee(void *DS, int EmployeeID) {
         ((DataStrcture *) DS)->employee_count--;
 
         //update highest earner
-        /*temp=((DataStrcture *) DS)->employees_pointers_by_salary;
-        while(temp->right) {
-            if(!temp->right) break;
-            temp=temp->right;
-        }
-        ((DataStrcture *) DS)->highest_earner_employee=temp->element;
-
-        temp=c->employees_pointers_by_salary;
-        while(temp->right) {
-            if(!temp->right) break;
-            temp=temp->right;
-        }
-        c->highest_earner_employee = temp->element;*/
         ((DataStrcture *) DS)->highest_earner_employee = UpdateHighestEarner(
                 ((DataStrcture *) DS)->employees_pointers_by_salary);
         c->highest_earner_employee = UpdateHighestEarner(c->employees_pointers_by_salary);
@@ -312,6 +321,15 @@ StatusType RemoveEmployee(void *DS, int EmployeeID) {
 
 }
 
+/**
+ * the func return company info through Values and NumEmployees
+ * o(log(k)) - k num of companies
+ * @param DS
+ * @param CompanyID
+ * @param Value
+ * @param NumEmployees
+ * @return
+ */
 StatusType GetCompanyInfo(void *DS, int CompanyID, int *Value, int *NumEmployees) {
     if ((DS == nullptr) || (CompanyID <= 0) || (Value == nullptr) || (NumEmployees == nullptr)) {
         return INVALID_INPUT;
@@ -325,6 +343,16 @@ StatusType GetCompanyInfo(void *DS, int CompanyID, int *Value, int *NumEmployees
     return SUCCESS;
 }
 
+/**
+ * the func return employee info
+ * o(log(n)) - n num of employees
+ * @param DS
+ * @param EmployeeID
+ * @param EmployerID
+ * @param Salary
+ * @param Grade
+ * @return
+ */
 StatusType GetEmployeeInfo(void *DS, int EmployeeID, int *EmployerID, int *Salary, int *Grade) {
     if ((DS == nullptr) || (EmployeeID <= 0) || (Salary == nullptr) || (Grade == nullptr)) {
         return INVALID_INPUT;
@@ -339,6 +367,14 @@ StatusType GetEmployeeInfo(void *DS, int EmployeeID, int *EmployerID, int *Salar
     return SUCCESS;
 }
 
+/**
+ * the func increase company value
+ * O(log(k)) - k num of companies
+ * @param DS
+ * @param CompanyID
+ * @param ValueIncrease
+ * @return
+ */
 StatusType IncreaseCompanyValue(void *DS, int CompanyID, int ValueIncrease) {
     if ((DS == nullptr) || (CompanyID <= 0) || (ValueIncrease <= 0)) {
         return INVALID_INPUT;
@@ -350,6 +386,17 @@ StatusType IncreaseCompanyValue(void *DS, int CompanyID, int ValueIncrease) {
     return SUCCESS;
 }
 
+
+
+/**
+ * the func promote an employee (salary and grade(pot))
+ * O(log(n)) - n num of employees
+ * @param DS
+ * @param EmployeeID
+ * @param SalaryIncrease
+ * @param BumpGrade
+ * @return
+ */
 StatusType PromoteEmployee(void *DS, int EmployeeID, int SalaryIncrease, int BumpGrade) {
     if ((DS == nullptr) || (EmployeeID <= 0) || (SalaryIncrease <= 0)) {
         return INVALID_INPUT;
@@ -370,6 +417,14 @@ StatusType PromoteEmployee(void *DS, int EmployeeID, int SalaryIncrease, int Bum
     return SUCCESS;
 }
 
+/**
+ * the func hire an employee (remove him from an old company and add him to a new)
+ * o(log(n) + log(k)) - n num of employees, k num of companies
+ * @param DS
+ * @param EmployeeID
+ * @param NewCompanyID
+ * @return
+ */
 StatusType HireEmployee(void *DS, int EmployeeID, int NewCompanyID) {
     if ((DS == nullptr) || (EmployeeID <= 0) || (NewCompanyID <= 0)) {
         return INVALID_INPUT;
@@ -401,24 +456,15 @@ StatusType HireEmployee(void *DS, int EmployeeID, int NewCompanyID) {
     }
 }
 
-void printEmployees(Employee **employees, int size) {
-    std::cout << "[";
-    for (int i = 0; i < size; i++) {
-        std::cout << (employees[i])->id << ",";
-    }
-    std::cout << "]" << std::endl;
-}
-
-void printEmployeesSalary(Employee **employees, int size) {
-    std::cout << "printingEmployeesSalary:" << std::endl;
-    std::cout << "[";
-    for (int i = 0; i < size; i++) {
-        std::cout << (employees[i])->salary << ",";
-    }
-    std::cout << "]" << std::endl;
-}
-
-
+/**
+ * the func get an array and convert it to a tree
+ * o(n) - n num of employees (base on preorder)
+ * @param array
+ * @param begin
+ * @param end
+ * @param isSalary
+ * @return
+ */
 tree<Employee> *arrayToTree(Employee **array, int begin, int end, bool isSalary) {
     if (begin > end) {
         return nullptr;
@@ -435,10 +481,13 @@ tree<Employee> *arrayToTree(Employee **array, int begin, int end, bool isSalary)
     int b = getHeight(head->right);
     head->height = (a > b ? a : b) + 1;
 
-    //head->height = getMax(getHeight(head->left), getHeight(head->right)) +1; // valgrind error (getMax defined multiple times)
     return head;
 }
 
+/**
+ * the func get 2 trees and combine them to a new one
+ * O(n1+n2) - ni num of employee at i (based on merge sort)
+ */
 tree<Employee> *
 CombineTree(Company *comp, tree<Employee> *head1, tree<Employee> *head2, int size1, int size2, StatusType *status,
             bool isSalary) {
@@ -453,18 +502,6 @@ CombineTree(Company *comp, tree<Employee> *head1, tree<Employee> *head2, int siz
 
     clear(head1);
     clear(head2);
-/*
-    if(!isSalary) {
-        printEmployees(tree1, index);
-        printEmployees(tree2, index2);
-    }
-    else {
-        printEmployeesSalary(tree1, index);
-        printEmployeesSalary(tree2, index2);
-    }
-
-     std::cout << "size1: " << size1 << " index1: " << index << " size2: " << size2 << " index2: " << index2 << std::endl;
-     */
     index = 0;
     index2 = 0;
 
@@ -511,10 +548,9 @@ CombineTree(Company *comp, tree<Employee> *head1, tree<Employee> *head2, int siz
         k++;
     }
 
-    //std::cout << "size1: " << size1 << " index1: " << i << " size2: " << size2 << " index2: " << j << std::endl;
     while (j < size2) {
-        merged[k] = tree2[j]; // tree1[j] invalid read
-        merged[k]->company = comp;  // tree1[j]->company invalid write
+        merged[k] = tree2[j];
+        merged[k]->company = comp;
         k++;
         j++;
     }
@@ -524,38 +560,35 @@ CombineTree(Company *comp, tree<Employee> *head1, tree<Employee> *head2, int siz
         k++;
         i++;
     }
-/*
-    if(!isSalary) printEmployees(merged, size1+size2);
-    else printEmployeesSalary(merged, size1+size2);
-*/
+
     tree<Employee> *new_head = arrayToTree(merged, 0, size2 + size1 - 1,isSalary);
 
-    /*for (int i = 0; i < size1; i++) {
-        delete tree1[i];
-    }*/
     delete[] tree1;
-    /*for (int i = 0; i < size2; i++) {
-        delete tree2[i];
-    }*/
+
     delete[] tree2;
-    /*for (int i = 0; i < size1 + size2; i++) {
-        delete merged[i];
-    }*/
+
     delete[] merged;
 
     return new_head;
 
-
 }
 
 
+/**
+ * Acquire company
+ * O(log(K)+nA+nB) - k num of companies, ni num of employee at i
+ * @param DS
+ * @param AcquirerID
+ * @param TargetID
+ * @param Factor
+ * @return
+ */
 StatusType AcquireCompany(void *DS, int AcquirerID, int TargetID, double Factor) {
     try {
         if (DS == nullptr || AcquirerID <= 0 || TargetID <= 0 || AcquirerID == TargetID || Factor < 1.00) {
             return INVALID_INPUT;
         }
-        DataStrcture *DSS = (DataStrcture *) DS;
-        tree<Company> *Acquirer = findById(((DataStrcture *) DS)->company_head, AcquirerID);
+         tree<Company> *Acquirer = findById(((DataStrcture *) DS)->company_head, AcquirerID);
         tree<Company> *Target = findById(((DataStrcture *) DS)->company_head, TargetID);
         if (Acquirer == nullptr || Target == nullptr || Acquirer->element->value < (10 * Target->element->value)) {
             return FAILURE;
@@ -563,9 +596,6 @@ StatusType AcquireCompany(void *DS, int AcquirerID, int TargetID, double Factor)
         Company *Acquirer_c = Acquirer->element;
         Company *Target_c = Target->element;
 
-        if (AcquirerID == 321 && TargetID == 330) {
-            int hi = 5;
-        }
 
         // add acquisition here
         int temp_val = (int) ((Acquirer->element->value + Target->element->value) * Factor);
@@ -626,6 +656,14 @@ StatusType AcquireCompany(void *DS, int AcquirerID, int TargetID, double Factor)
     return SUCCESS;
 }
 
+/**
+ * the func return highest earner employee from DS or Company
+ * O(log(k))- k, num of companies
+ * @param DS
+ * @param CompanyID
+ * @param EmployeeID
+ * @return
+ */
 StatusType GetHighestEarner(void *DS, int CompanyID, int *EmployeeID) {
     if ((DS == nullptr) || (EmployeeID == nullptr) || (CompanyID == 0)) {
         return INVALID_INPUT;
@@ -649,6 +687,14 @@ StatusType GetHighestEarner(void *DS, int CompanyID, int *EmployeeID) {
     return SUCCESS;
 }
 
+/**
+ * GetAllEmployeesBySalary helper func
+ * O(log(n)) n num of employees
+ * @param e
+ * @param Employees
+ * @param NumOfEmployees
+ * @return
+ */
 StatusType GetAllEmployeesBySalary_helper(tree<Employee> *e, int **Employees, int *NumOfEmployees) {
     //if(*counter >= NumOfCompanies) return SUCCESS;
     if (e == nullptr)
@@ -666,6 +712,14 @@ StatusType GetAllEmployeesBySalary_helper(tree<Employee> *e, int **Employees, in
     return SUCCESS;
 }
 
+/**
+ * O(log(k)+n) - k, num of companies , n num of employees given
+ * @param DS
+ * @param CompanyID
+ * @param Employees
+ * @param NumOfEmployees
+ * @return
+ */
 StatusType GetAllEmployeesBySalary(void *DS, int CompanyID, int **Employees, int *NumOfEmployees) {
     try {
         if ((DS == nullptr) || (Employees == nullptr) || (NumOfEmployees == nullptr) || (CompanyID == 0)) {
@@ -711,31 +765,15 @@ StatusType GetAllEmployeesBySalary(void *DS, int CompanyID, int **Employees, int
     return SUCCESS;
 }
 
-/*StatusType GetHighestEarnerInEachCompany_helper(void *DS, int NumOfCompanies, int **Employees, tree<Company>* c, Company** companies, int* counter) {
-    if(*counter >= NumOfCompanies) return SUCCESS;
-    if(c->left == nullptr) {
-        // add c
-        companies[*counter] = c->element;
-        (*counter)++;
-        return SUCCESS; // smallest node
-    }
-
-    StatusType result = GetHighestEarnerInEachCompany_helper(DS, NumOfCompanies, Employees, c->left, companies, counter);
-    if(result != SUCCESS) return result;
-
-    // add c
-    if(c != nullptr) {
-        companies[*counter] = c->element;
-        (*counter)++;
-    }
-
-    if(c->right != nullptr) {
-        result = GetHighestEarnerInEachCompany_helper(DS, NumOfCompanies, Employees, c->right, companies, counter);
-        if(result != SUCCESS) return result;
-    }
-    return SUCCESS; //check which status is required here
-}*/
-
+/**
+ *
+ * @param DS
+ * @param NumOfCompanies
+ * @param c
+ * @param companies
+ * @param counter
+ * @return
+ */
 StatusType GetHighestEarnerInEachCompany_helper(void *DS, int NumOfCompanies, tree<Company> *c, Company **companies,
                                                 int *counter) {
     if (c == nullptr) return SUCCESS;
@@ -760,6 +798,13 @@ StatusType GetHighestEarnerInEachCompany_helper(void *DS, int NumOfCompanies, tr
     return SUCCESS; //check which status is required here
 }
 
+/**
+ *
+ * @param DS
+ * @param NumOfCompanies
+ * @param Employees
+ * @return
+ */
 StatusType GetHighestEarnerInEachCompany(void *DS, int NumOfCompanies, int **Employees) {
     try {
         if ((DS == nullptr) || (Employees == nullptr) || NumOfCompanies < 1) return INVALID_INPUT;
@@ -773,19 +818,11 @@ StatusType GetHighestEarnerInEachCompany(void *DS, int NumOfCompanies, int **Emp
         if (result != SUCCESS) {
             delete[] companies;
             free(*Employees);
-            /*for(int i = 0; i < counter; i++) {
-                delete companies[i];
-            }
-            delete[] companies;*/
             return result;
         }
         if (counter != NumOfCompanies) {
             delete[] companies;
             free(*Employees);
-            /*for(int i = 0; i < counter; i++) {
-                delete companies[i];
-            }
-            delete[] companies;*/
             return FAILURE;
         }
 
@@ -793,10 +830,6 @@ StatusType GetHighestEarnerInEachCompany(void *DS, int NumOfCompanies, int **Emp
             (*(Employees))[i] = companies[i]->highest_earner_employee->id;
         }
 
-        /*for(int i = 0; i < NumOfCompanies; i++) {
-            delete companies[i];
-        }
-        delete[] companies;*/
         delete[] companies;
     }
     catch (std::bad_alloc &) {
@@ -804,31 +837,18 @@ StatusType GetHighestEarnerInEachCompany(void *DS, int NumOfCompanies, int **Emp
     }
     return SUCCESS;
 }
-
-/*StatusType GetNumEmployeesMatching_helper(tree<Employee> *e, int MinEmployeeID, int MaxEmployeeId, int *TotalNumOfEmployees) {
-    if (e->left == nullptr || e->left->id < MinEmployeeID) {
-        // add e
-        if (e->id >= MinEmployeeID && e->id <= MaxEmployeeId)
-            (*TotalNumOfEmployees)++;
-        return SUCCESS; // smallest node
-    }
-
-    StatusType result = GetNumEmployeesMatching_helper(e->left, MinEmployeeID, MaxEmployeeId, TotalNumOfEmployees);
-    if (result != SUCCESS) return result;
-
-    // add e
-    if (e->id >= MinEmployeeID && e->id <= MaxEmployeeId)
-        (*TotalNumOfEmployees)++;
-
-    if (e->right != nullptr && e->right->id <= MaxEmployeeId) {
-        result = GetNumEmployeesMatching_helper(e->right, MinEmployeeID, MaxEmployeeId, TotalNumOfEmployees);
-        if (result != SUCCESS) return result;
-    }
-    return SUCCESS; //check which status is required here
-}*/
-
-StatusType
-GetNumEmployeesMatching_helper(tree<Employee> *e, int MinEmployeeID, int MaxEmployeeId, int *TotalNumOfEmployees,
+/**
+ *
+ * @param e
+ * @param MinEmployeeID
+ * @param MaxEmployeeId
+ * @param TotalNumOfEmployees
+ * @param NumOfEmployees
+ * @param MinSalary
+ * @param MinGrade
+ * @return
+ */
+StatusType GetNumEmployeesMatching_helper(tree<Employee> *e, int MinEmployeeID, int MaxEmployeeId, int *TotalNumOfEmployees,
                                int *NumOfEmployees, int MinSalary, int MinGrade) {
     if (e == nullptr) {
         return SUCCESS;
@@ -852,7 +872,18 @@ GetNumEmployeesMatching_helper(tree<Employee> *e, int MinEmployeeID, int MaxEmpl
 
     return SUCCESS; //check which status is required here
 }
-
+/**
+ *
+ * @param DS
+ * @param CompanyID
+ * @param MinEmployeeID
+ * @param MaxEmployeeId
+ * @param MinSalary
+ * @param MinGrade
+ * @param TotalNumOfEmployees
+ * @param NumOfEmployees
+ * @return
+ */
 StatusType GetNumEmployeesMatching(void *DS, int CompanyID, int MinEmployeeID, int MaxEmployeeId,
                                    int MinSalary, int MinGrade, int *TotalNumOfEmployees, int *NumOfEmployees) {
     if (DS == nullptr || TotalNumOfEmployees == nullptr || NumOfEmployees == nullptr || CompanyID == 0 ||
@@ -885,36 +916,13 @@ StatusType GetNumEmployeesMatching(void *DS, int CompanyID, int MinEmployeeID, i
     return SUCCESS;
 }
 
-/*
-void Quit_Helper(void **DS, tree<Company>* &curr) {
-    if(curr == nullptr) return;
 
-    Quit_Helper(DS, curr->left);
-    Quit_Helper(DS, curr->right);
-
-    clear(curr->element->employees_pointers_by_salary);
-    curr->element->employees_pointers = nullptr;
-    clear(curr->element->employees_pointers);
-    curr->element->employees_pointers_by_salary = nullptr;
-    delete curr->element;
-    curr->element = nullptr;
-    delete curr;
-}
-
-void Quit(void **DS) {
-    tree<Company>* &c = ((DataStrcture*)DS)->company_head;
-    Quit_Helper(DS,c);
-    ((DataStrcture*)DS)->company_head = nullptr;
-    clearAll(((DataStrcture*)DS)->employee_head);
-    ((DataStrcture*)DS)->employee_head = nullptr;
-    clear(((DataStrcture*)DS)->employees_pointers_by_salary);
-    ((DataStrcture*)DS)->employees_pointers_by_salary = nullptr;
-    ((DataStrcture*)DS)->highest_earner_employee = nullptr;
-    delete ((DataStrcture*)DS);
-}
-*/
-
-
+/**
+ * Quit helper
+ * O(n+k) - n num of employees , k num of companies
+ * @param DS
+ * @param curr
+ */
 void Quit_Helper(void *DS, tree<Company> *&curr) {
     if (curr == nullptr) return;
 
@@ -930,7 +938,11 @@ void Quit_Helper(void *DS, tree<Company> *&curr) {
     curr->element = nullptr;
     delete curr;
 }
-
+/**
+ * the func clear the DS
+ * O(n+k) - n num of employees , k num of companies
+ * @param DS
+ */
 void Quit(void **DS) {
     DataStrcture *DSS = ((DataStrcture *) *DS);
     tree<Company> *&c = DSS->company_head;
